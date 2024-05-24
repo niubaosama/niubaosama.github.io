@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- 确保适当的视口设置 -->
+    <title>名字列表</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+            font-family: 'MiSans';
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+
+        .fas.fa-thumbs-down.icon {
+            font-size: 20px;
+            color: #77DDFF;
+        }
+
+        .fas.fa-thumbs-down.icon:active {
+            font-size: 20px;
+            color: #009FCC;
+        }
+
+
+        .fas.fa-thumbs-up.icon {
+            font-size: 20px;
+            color: #FF7744;
+        }
+
+        .fas.fa-thumbs-up.icon:active {
+            font-weight: bolder;
+            color: #E63F00;
+        }
+
+
+        .golden {
+            background-color: #FFD700; /* 金色背景 */
+        }
+
+        .silver {
+            background-color: #C0C0C0; /* 银色背景 */
+        }
+
+        .bronze {
+            background-color: #CD7F32; /* 铜色背景 */
+        }
+
+        /* 响应式设计，针对手机设备 */
+        @media only screen and (max-width: 600px) {
+            /*table, thead, tbody, th, td, tr {*/
+            /*display: block;*/
+            /*}*/
+            /*thead tr {*/
+            /*  position: absolute;*/
+            /*  top: -9999px;*/
+            /*  left: -9999px;*/
+            /*}*/
+            tr {
+                margin-bottom: 1rem;
+            }
+
+            td {
+                border: none;
+                border-bottom: 1px solid #ddd;
+                position: relative;
+                /*padding-left: 50%;*/
+            }
+
+            td:before {
+                content: attr(data-th); /* 使用data-th属性来展示表头 */
+                position: absolute;
+                left: 6px;
+                width: 45%; /* 调整表头宽度 */
+                font-weight: bold;
+            }
+
+            /* 可以根据需要调整字体大小 */
+            td, th {
+                font-size: 18px;
+            }
+
+            @font-face {
+                font-family: 'MiSans';
+                src: url('/font/MiSans-Medium.ttf') format('truetype');
+                font-weight: normal;
+                font-style: normal;
+            }
+        }
+    </style>
+    <script>
+        function increaseRating(ratingId) {
+            var ratingElement = document.getElementById('rating' + ratingId);
+            if (ratingElement) {
+                var currentValue = parseInt(ratingElement.textContent, 10);
+                ratingElement.textContent = currentValue + 1;
+            }
+        }
+
+        function decreaseRating(ratingId) {
+            var ratingElement = document.getElementById('rating' + ratingId);
+            if (ratingElement) {
+                var currentValue = parseInt(ratingElement.textContent, 10);
+                if (currentValue > 0) { // 避免<i class="fas fa-thumbs-down icon"></i>到负数
+                    ratingElement.textContent = currentValue - 1;
+                }
+            }
+        }
+    </script>
+
+    <!-- 确保使用type="module"来支持import -->
+    <script type="module">
+        import ratings from './ratingsData.js';
+
+        function initRatings() {
+            document.getElementById('rating1').textContent = ratings.rating1;
+            document.getElementById('rating2').textContent = ratings.rating2;
+            document.getElementById('rating3').textContent = ratings.rating3;
+            // 初始化其他rating值
+        }
+
+        window.onload = initRatings;
+    </script>
+</head>
+<body>
+
+<table>
+    <thead>
+    <tr>
+        <th>名字</th>
+        <th>好评度</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody>
+
+
+    <tr class="golden">
+        <td>牛汐禾</td>
+        <td id="rating1">1</td>
+        <td>
+            <button onclick="decreaseRating(1)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(1)"><i class="fas fa-thumbs-up icon"></i></button>
+
+        </td>
+    </tr>
+    <tr class="silver">
+        <td>牛奕柠</td>
+        <td id="rating2">1</td>
+        <td>
+            <button onclick="decreaseRating(2)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(2)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    <tr class="bronze">
+        <td>牛安柠</td>
+        <td id="rating3">0</td>
+        <td>
+            <button onclick="decreaseRating(3)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(3)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    <tr>
+        <td>牛亦柠</td>
+        <td id="rating4">0</td>
+        <td>
+            <button onclick="decreaseRating(4)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(4)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    <tr>
+        <td>牛亦宁</td>
+        <td id="rating5">0</td>
+        <td>
+            <button onclick="decreaseRating(5)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(5)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    <tr>
+        <td>牛语桐</td>
+        <td id="rating6">0</td>
+        <td>
+            <button onclick="decreaseRating(6)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(6)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    <tr>
+        <td>牛嘉卉</td>
+        <td id="rating7">0</td>
+        <td>
+            <button onclick="decreaseRating(7)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(7)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    <tr>
+        <td>牛嘉煜</td>
+        <td id="rating8">0</td>
+        <td>
+            <button onclick="decreaseRating(8)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(8)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    <tr>
+        <td>牛芊洛</td>
+        <td id="rating9">0</td>
+        <td>
+            <button onclick="decreaseRating(9)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(9)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    <tr>
+        <td>牛歆苒</td>
+        <td id="rating10">0</td>
+        <td>
+            <button onclick="decreaseRating(10)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(10)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    <tr>
+        <td>牛伊柠</td>
+        <td id="rating11">0</td>
+        <td>
+            <button onclick="decreaseRating(11)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(11)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    <tr>
+        <td>牛沐禾</td>
+        <td id="rating12">0</td>
+        <td>
+            <button onclick="decreaseRating(12)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(12)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    <tr>
+        <td>牛欣悦</td>
+        <td id="rating13">0</td>
+        <td>
+            <button onclick="decreaseRating(13)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(13)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    <tr>
+        <td>牛相宜</td>
+        <td id="rating14">0</td>
+        <td>
+            <button onclick="decreaseRating(14)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(14)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    <tr>
+        <td>牛月汐</td>
+        <td id="rating15">0</td>
+        <td>
+            <button onclick="decreaseRating(15)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(15)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    <tr>
+        <td>牛芷柠</td>
+        <td id="rating16">0</td>
+        <td>
+            <button onclick="decreaseRating(16)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(16)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    <tr>
+        <td>牛晴雨</td>
+        <td id="rating17">0</td>
+        <td>
+            <button onclick="decreaseRating(17)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(17)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    <tr>
+        <td>牛雨晴</td>
+        <td id="rating18">0</td>
+        <td>
+            <button onclick="decreaseRating(18)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(18)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    <tr>
+        <td>牛汐柠</td>
+        <td id="rating19">0</td>
+        <td>
+            <button onclick="decreaseRating(19)"><i class="fas fa-thumbs-down icon"></i></button>
+            <button onclick="increaseRating(19)"><i class="fas fa-thumbs-up icon"></i></button>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
