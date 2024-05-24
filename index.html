@@ -61,14 +61,6 @@
 
         /* 响应式设计，针对手机设备 */
         @media only screen and (max-width: 600px) {
-            /*table, thead, tbody, th, td, tr {*/
-            /*display: block;*/
-            /*}*/
-            /*thead tr {*/
-            /*  position: absolute;*/
-            /*  top: -9999px;*/
-            /*  left: -9999px;*/
-            /*}*/
             tr {
                 margin-bottom: 1rem;
             }
@@ -114,7 +106,10 @@
             var ratingElement = document.getElementById('rating' + ratingId);
             if (ratingElement) {
                 var currentValue = parseInt(ratingElement.textContent, 10);
-                if (currentValue > 0) { // 避免<i class="fas fa-thumbs-down icon"></i>到负数
+                if (currentValue > 0) {
+                    // const todo = AV.Object.createWithoutData("name", "582570f38ac247004f39c24b");
+                    // todo.set("content", "这周周会改到周三下午三点。");
+                    // todo.save();
                     ratingElement.textContent = currentValue - 1;
                 }
             }
@@ -126,181 +121,130 @@
         import ratings from './ratingsData.js';
 
         function initRatings() {
-            document.getElementById('rating1').textContent = ratings.rating1;
-            document.getElementById('rating2').textContent = ratings.rating2;
-            document.getElementById('rating3').textContent = ratings.rating3;
-            // 初始化其他rating值
+
         }
 
         window.onload = initRatings;
     </script>
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@4.0.0/dist/av-min.js"></script>
+    <script>
+        const { Query, User } = AV;
+
+        AV.init({
+            appId: "zPQQC2GRdAgy33W5TU3fKCTH-MdYXbMMI",
+            appKey: "1L2ydqJWJsrdtIp5AqQlb5ds",
+            serverURL: "https://niubaosama.github.io",
+        });
+
+        const query = new AV.Query("name");
+        query.equalTo("isDelete", "0");
+        query.descending("count");
+        query.find().then((nameList) => {
+            console.log("nameList", nameList);
+
+            // 获取表格的父元素
+            const tableBody = document.querySelector("tbody");
+
+            // 清空表格内容
+            tableBody.innerHTML = "";
+
+            // 遍历查询结果并动态生成表格行
+            nameList.forEach((nameObject, index) => {
+                // 使用 get 方法获取 attributes 中的属性值
+                const name = nameObject.get('name');
+                const count = nameObject.get('count');
+                const id = nameObject.get('objectId');
+
+                console.log("Name:", name, "Count:", count, "ID:", id);
+
+                // 创建新的表格行
+                const tr = document.createElement("tr");
+                tr.classList.add("golden");
+
+                // 创建隐藏的ID单元格
+                const td0 = document.createElement("td");
+                td0.textContent = id;
+                td0.style.display = "none";
+                tr.appendChild(td0);
+
+                // 创建第一个单元格
+                const td1 = document.createElement("td");
+                td1.textContent = name;
+                tr.appendChild(td1);
+
+                // 创建第二个单元格
+                const td2 = document.createElement("td");
+                td2.textContent = count;
+                td2.id = `rating${index + 1}`;
+                tr.appendChild(td2);
+
+                // 创建第三个单元格及按钮
+                const td3 = document.createElement("td");
+                const decreaseButton = document.createElement("button");
+                decreaseButton.setAttribute("onclick", `decreaseRating('${id}', ${count})`);
+                decreaseButton.innerHTML = '<i class="fas fa-thumbs-down icon"></i>';
+                td3.appendChild(decreaseButton);
+
+                const increaseButton = document.createElement("button");
+                increaseButton.setAttribute("onclick", `increaseRating('${id}', ${count})`);
+                increaseButton.innerHTML = '<i class="fas fa-thumbs-up icon"></i>';
+                td3.appendChild(increaseButton);
+
+                tr.appendChild(td3);
+
+                // 将新创建的行添加到表格中
+                tableBody.appendChild(tr);
+            });
+        });
+
+        function decreaseRating(id, count) {
+            console.log(`Decrease rating for ID: ${id} with count: ${count}`);
+            // 将 count 转换为整数
+            const currentCount = parseInt(count, 10);
+            const newCount = (currentCount - 1).toString(); // 转换为字符串
+
+            // 在这里添加减少评分的逻辑
+            const todo = AV.Object.createWithoutData("name", id);
+            todo.set("count", newCount);
+            todo.save().then(() => {
+                console.log(`Rating decreased for ID: ${id}`);
+                // 更新页面中的 count 值
+                document.querySelector(`#rating${id}`).textContent = newCount;
+            });
+        }
+
+        function increaseRating(id, count) {
+            console.log(`Increase rating for ID: ${id} with count: ${count}`);
+            // 将 count 转换为整数
+            const currentCount = parseInt(count, 10);
+            const newCount = (currentCount + 1).toString(); // 转换为字符串
+
+            // 在这里添加增加评分的逻辑
+            const todo = AV.Object.createWithoutData("name", id);
+            todo.set("count", newCount);
+            todo.save().then(() => {
+                console.log(`Rating increased for ID: ${id}`);
+                // 更新页面中的 count 值
+                document.querySelector(`#rating${id}`).textContent = newCount;
+            });
+        }
+
+    </script>
 </head>
 <body>
 
+<!-- 示例表格 -->
 <table>
     <thead>
     <tr>
-        <th>名字</th>
-        <th>好评度</th>
-        <th>操作</th>
+        <th style="display: none;">ID</th>
+        <th>姓名😁</th>
+        <th>好评度😍</th>
+        <th>操作📝</th>
     </tr>
     </thead>
     <tbody>
-
-
-    <tr class="golden">
-        <td>牛汐禾</td>
-        <td id="rating1">1</td>
-        <td>
-            <button onclick="decreaseRating(1)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(1)"><i class="fas fa-thumbs-up icon"></i></button>
-
-        </td>
-    </tr>
-    <tr class="silver">
-        <td>牛奕柠</td>
-        <td id="rating2">1</td>
-        <td>
-            <button onclick="decreaseRating(2)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(2)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
-    <tr class="bronze">
-        <td>牛安柠</td>
-        <td id="rating3">0</td>
-        <td>
-            <button onclick="decreaseRating(3)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(3)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
-    <tr>
-        <td>牛亦柠</td>
-        <td id="rating4">0</td>
-        <td>
-            <button onclick="decreaseRating(4)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(4)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
-    <tr>
-        <td>牛亦宁</td>
-        <td id="rating5">0</td>
-        <td>
-            <button onclick="decreaseRating(5)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(5)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
-    <tr>
-        <td>牛语桐</td>
-        <td id="rating6">0</td>
-        <td>
-            <button onclick="decreaseRating(6)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(6)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
-    <tr>
-        <td>牛嘉卉</td>
-        <td id="rating7">0</td>
-        <td>
-            <button onclick="decreaseRating(7)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(7)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
-    <tr>
-        <td>牛嘉煜</td>
-        <td id="rating8">0</td>
-        <td>
-            <button onclick="decreaseRating(8)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(8)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
-    <tr>
-        <td>牛芊洛</td>
-        <td id="rating9">0</td>
-        <td>
-            <button onclick="decreaseRating(9)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(9)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
-    <tr>
-        <td>牛歆苒</td>
-        <td id="rating10">0</td>
-        <td>
-            <button onclick="decreaseRating(10)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(10)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
-    <tr>
-        <td>牛伊柠</td>
-        <td id="rating11">0</td>
-        <td>
-            <button onclick="decreaseRating(11)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(11)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
-    <tr>
-        <td>牛沐禾</td>
-        <td id="rating12">0</td>
-        <td>
-            <button onclick="decreaseRating(12)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(12)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
-    <tr>
-        <td>牛欣悦</td>
-        <td id="rating13">0</td>
-        <td>
-            <button onclick="decreaseRating(13)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(13)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
-    <tr>
-        <td>牛相宜</td>
-        <td id="rating14">0</td>
-        <td>
-            <button onclick="decreaseRating(14)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(14)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
-    <tr>
-        <td>牛月汐</td>
-        <td id="rating15">0</td>
-        <td>
-            <button onclick="decreaseRating(15)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(15)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
-    <tr>
-        <td>牛芷柠</td>
-        <td id="rating16">0</td>
-        <td>
-            <button onclick="decreaseRating(16)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(16)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
-    <tr>
-        <td>牛晴雨</td>
-        <td id="rating17">0</td>
-        <td>
-            <button onclick="decreaseRating(17)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(17)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
-    <tr>
-        <td>牛雨晴</td>
-        <td id="rating18">0</td>
-        <td>
-            <button onclick="decreaseRating(18)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(18)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
-    <tr>
-        <td>牛汐柠</td>
-        <td id="rating19">0</td>
-        <td>
-            <button onclick="decreaseRating(19)"><i class="fas fa-thumbs-down icon"></i></button>
-            <button onclick="increaseRating(19)"><i class="fas fa-thumbs-up icon"></i></button>
-        </td>
-    </tr>
+    <!-- 动态生成的行会被添加到这里 -->
     </tbody>
 </table>
 
