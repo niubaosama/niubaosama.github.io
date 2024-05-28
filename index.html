@@ -130,7 +130,7 @@
         });
 
         // 刷新表格数据的函数
-        function refreshTable() {
+        function refreshTable(showAlert = false) {
             const query = new AV.Query("baby_name");
 
             query.equalTo("isDelete", "0");
@@ -152,7 +152,7 @@
 
                     // 创建新的表格行
                     const tr = document.createElement("tr");
-                    tr.classList.add("golden");
+                    // tr.classList.add("golden");
 
                     // 创建隐藏的ID单元格
                     const td0 = document.createElement("td");
@@ -173,6 +173,7 @@
 
                     // 创建第三个单元格及按钮
                     const td3 = document.createElement("td");
+                    td3.setAttribute("colspan", "2"); // 合并两个单元格
                     const decreaseButton = document.createElement("button");
                     decreaseButton.setAttribute("onclick", `decreaseRating('${id}')`);
                     decreaseButton.innerHTML = '<i class="fas fa-thumbs-down icon"></i>';
@@ -188,6 +189,9 @@
                     // 将新创建的行添加到表格中
                     tableBody.appendChild(tr);
                 });
+                if (showAlert) {
+                    showCustomAlert("刷新成功");
+                }
             });
         }
 
@@ -225,18 +229,23 @@
                 refreshTable();
             });
         }
+        function showCustomAlert(message) {
+            alert(message)
+        }
+
     </script>
 </head>
 <body>
-
+<!--<button onclick="refreshTable(true)">刷新表格</button>-->
 <!-- 示例表格 -->
 <table>
     <thead>
     <tr>
         <th style="display: none;">ID</th>
-        <th>姓名😁</th>
+        <th>姓名😋</th>
         <th>好评度😍</th>
         <th>操作📝</th>
+        <th onclick="refreshTable(true)">刷新🔁</th>
     </tr>
     </thead>
     <tbody>
