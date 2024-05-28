@@ -93,28 +93,6 @@
             }
         }
     </style>
-    <script>
-        function increaseRating(ratingId) {
-            var ratingElement = document.getElementById('rating' + ratingId);
-            if (ratingElement) {
-                var currentValue = parseInt(ratingElement.textContent, 10);
-                ratingElement.textContent = currentValue + 1;
-            }
-        }
-
-        function decreaseRating(ratingId) {
-            var ratingElement = document.getElementById('rating' + ratingId);
-            if (ratingElement) {
-                var currentValue = parseInt(ratingElement.textContent, 10);
-                if (currentValue > 0) {
-                    // const todo = AV.Object.createWithoutData("name", "582570f38ac247004f39c24b");
-                    // todo.set("content", "这周周会改到周三下午三点。");
-                    // todo.save();
-                    ratingElement.textContent = currentValue - 1;
-                }
-            }
-        }
-    </script>
     <script src="//cdn.jsdelivr.net/npm/leancloud-storage@4.0.0/dist/av-min.js"></script>
     <!--    <script src="//code.bdstatic.com/npm/leancloud-storage@4.0.0/dist/av-min.js"></script>-->
     <!--        <script src="https://unpkg.com/browse/leancloud-storage@4.15.2/dist/av-core-min.js"></script>-->
@@ -168,7 +146,7 @@
                     // 创建第二个单元格
                     const td2 = document.createElement("td");
                     td2.textContent = count;
-                    td2.id = `rating${id}`;  // 修改此处，将 id 设置为 `rating${id}`
+                    td2.id = `rating${id}`;
                     tr.appendChild(td2);
 
                     // 创建第三个单元格及按钮
@@ -204,15 +182,26 @@
             const currentCount = parseInt(countElement.textContent, 10);
             const newCount = currentCount - 1;
 
-            // 更新数据库中的计数值
-            const todo = AV.Object.createWithoutData("baby_name", id);
-            todo.set("cnumber", newCount);  // 直接保存为 number 类型
-            todo.save().then(() => {
-                console.log(`Rating decreased for ID: ${id}`);
-                // 刷新表格数据
-                refreshTable();
-            });
+            // 检查本地存储中是否存在点赞记录
+            const hasLiked = checkIfLiked(id);
+
+            if (!hasLiked) {
+                // 如果未点过赞，则执行减一操作
+                const todo = AV.Object.createWithoutData("baby_name", id);
+                todo.set("cnumber", newCount);  // 直接保存为 number 类型
+                todo.save().then(() => {
+                    console.log(`Rating decreased for ID: ${id}`);
+                    // 刷新表格数据
+                    setTimeout(refreshTable, 500);
+                    // 将取消点赞记录存储到本地
+                    saveLikeToLocalStorage(id);
+                });
+            } else {
+                // 如果已经点过赞，则弹出提示
+                showCustomAlert("您已经点过赞了！");
+            }
         }
+
 
         function increaseRating(id) {
             // 获取当前计数值
@@ -220,23 +209,48 @@
             const currentCount = parseInt(countElement.textContent, 10);
             const newCount = currentCount + 1;
 
-            // 更新数据库中的计数值
-            const todo = AV.Object.createWithoutData("baby_name", id);
-            todo.set("cnumber", newCount);  // 直接保存为 number 类型
-            todo.save().then(() => {
-                console.log(`Rating increased for ID: ${id}`);
-                // 刷新表格数据
-                refreshTable();
-            });
+            // 检查本地存储中是否存在点赞记录
+            const hasLiked = checkIfLiked(id);
+
+            if (hasLiked) {
+                // 如果已经点过赞，则弹出提示
+                showCustomAlert("您已经点过赞了！");
+            } else {
+                // 更新数据库中的计数值
+                const todo = AV.Object.createWithoutData("baby_name", id);
+                todo.set("cnumber", newCount);  // 直接保存为 number 类型
+                todo.save().then(() => {
+                    console.log(`Rating increased for ID: ${id}`);
+                    // 刷新表格数据
+                    setTimeout(refreshTable, 500);
+                    // 将点赞记录保存到本地存储中
+                    saveLikeToLocalStorage(id);
+                });
+            }
         }
+
         function showCustomAlert(message) {
             alert(message)
+        }
+
+        function checkIfLiked(id) {
+            const likedIds = getLikedIdsFromLocalStorage();
+            return likedIds.includes(id);
+        }
+
+        function saveLikeToLocalStorage(id) {
+            const likedIds = getLikedIdsFromLocalStorage();
+            likedIds.push(id);
+            localStorage.setItem("likedIds", JSON.stringify(likedIds));
+        }
+
+        function getLikedIdsFromLocalStorage() {
+            return JSON.parse(localStorage.getItem("likedIds")) || [];
         }
 
     </script>
 </head>
 <body>
-<!--<button onclick="refreshTable(true)">刷新表格</button>-->
 <!-- 示例表格 -->
 <table>
     <thead>
