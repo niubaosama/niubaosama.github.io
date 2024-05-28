@@ -115,120 +115,116 @@
             }
         }
     </script>
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@4.0.0/dist/av-min.js"></script>
+    <!--    <script src="//code.bdstatic.com/npm/leancloud-storage@4.0.0/dist/av-min.js"></script>-->
+    <!--        <script src="https://unpkg.com/browse/leancloud-storage@4.15.2/dist/av-core-min.js"></script>-->
 
-    <!-- 确保使用type="module"来支持import -->
-    <script type="module">
-        import ratings from './ratingsData.js';
+    <script>
+        // 初始化 LeanCloud
+        const { Query, User } = AV;
+        AV.debug.enable();
+        AV.init({
+            appId: "sypHH8vVFVBK6QNbyo0X01Ai-gzGzoHsz",
+            appKey: "9RJlmcDtPVMX6o6kWhF1eq37",
+            serverURLs: "https://syphh8vv.lc-cn-n1-shared.com",
+        });
 
-        function initRatings() {
+        // 刷新表格数据的函数
+        function refreshTable() {
+            const query = new AV.Query("baby_name");
 
+            query.equalTo("isDelete", "0");
+            query.ascending("name");
+            query.descending("cnumber");
+            query.find().then((nameList) => {
+                // 获取表格的父元素
+                const tableBody = document.querySelector("tbody");
+
+                // 清空表格内容
+                tableBody.innerHTML = "";
+
+                // 遍历查询结果并动态生成表格行
+                nameList.forEach((nameObject) => {
+                    // 使用 get 方法获取 attributes 中的属性值
+                    const name = nameObject.get('name');
+                    const count = nameObject.get('cnumber');
+                    const id = nameObject.get('objectId');
+
+                    // 创建新的表格行
+                    const tr = document.createElement("tr");
+                    tr.classList.add("golden");
+
+                    // 创建隐藏的ID单元格
+                    const td0 = document.createElement("td");
+                    td0.textContent = id;
+                    td0.style.display = "none";
+                    tr.appendChild(td0);
+
+                    // 创建第一个单元格
+                    const td1 = document.createElement("td");
+                    td1.textContent = name;
+                    tr.appendChild(td1);
+
+                    // 创建第二个单元格
+                    const td2 = document.createElement("td");
+                    td2.textContent = count;
+                    td2.id = `rating${id}`;  // 修改此处，将 id 设置为 `rating${id}`
+                    tr.appendChild(td2);
+
+                    // 创建第三个单元格及按钮
+                    const td3 = document.createElement("td");
+                    const decreaseButton = document.createElement("button");
+                    decreaseButton.setAttribute("onclick", `decreaseRating('${id}')`);
+                    decreaseButton.innerHTML = '<i class="fas fa-thumbs-down icon"></i>';
+                    td3.appendChild(decreaseButton);
+
+                    const increaseButton = document.createElement("button");
+                    increaseButton.setAttribute("onclick", `increaseRating('${id}')`);
+                    increaseButton.innerHTML = '<i class="fas fa-thumbs-up icon"></i>';
+                    td3.appendChild(increaseButton);
+
+                    tr.appendChild(td3);
+
+                    // 将新创建的行添加到表格中
+                    tableBody.appendChild(tr);
+                });
+            });
         }
 
-        window.onload = initRatings;
-    </script>
-    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@4.0.0/dist/av-min.js"></script>
-    <script>
-        const { Query, User } = AV;
+        // 调用刷新表格数据的函数以初始化表格
+        refreshTable();
 
-        AV.init({
-            appId: "zPQQC2GRdAgy33W5TU3fKCTH-MdYXbMMI",
-            appKey: "1L2ydqJWJsrdtIp5AqQlb5ds",
-            serverURL: "https://niubaosama.github.io",
-        });
+        function decreaseRating(id) {
+            // 获取当前计数值
+            const countElement = document.querySelector(`#rating${id}`);
+            const currentCount = parseInt(countElement.textContent, 10);
+            const newCount = currentCount - 1;
 
-        const query = new AV.Query("name");
-        query.equalTo("isDelete", "0");
-        query.descending("count");
-        query.find().then((nameList) => {
-            console.log("nameList", nameList);
-
-            // 获取表格的父元素
-            const tableBody = document.querySelector("tbody");
-
-            // 清空表格内容
-            tableBody.innerHTML = "";
-
-            // 遍历查询结果并动态生成表格行
-            nameList.forEach((nameObject, index) => {
-                // 使用 get 方法获取 attributes 中的属性值
-                const name = nameObject.get('name');
-                const count = nameObject.get('count');
-                const id = nameObject.get('objectId');
-
-                console.log("Name:", name, "Count:", count, "ID:", id);
-
-                // 创建新的表格行
-                const tr = document.createElement("tr");
-                tr.classList.add("golden");
-
-                // 创建隐藏的ID单元格
-                const td0 = document.createElement("td");
-                td0.textContent = id;
-                td0.style.display = "none";
-                tr.appendChild(td0);
-
-                // 创建第一个单元格
-                const td1 = document.createElement("td");
-                td1.textContent = name;
-                tr.appendChild(td1);
-
-                // 创建第二个单元格
-                const td2 = document.createElement("td");
-                td2.textContent = count;
-                td2.id = `rating${index + 1}`;
-                tr.appendChild(td2);
-
-                // 创建第三个单元格及按钮
-                const td3 = document.createElement("td");
-                const decreaseButton = document.createElement("button");
-                decreaseButton.setAttribute("onclick", `decreaseRating('${id}', ${count})`);
-                decreaseButton.innerHTML = '<i class="fas fa-thumbs-down icon"></i>';
-                td3.appendChild(decreaseButton);
-
-                const increaseButton = document.createElement("button");
-                increaseButton.setAttribute("onclick", `increaseRating('${id}', ${count})`);
-                increaseButton.innerHTML = '<i class="fas fa-thumbs-up icon"></i>';
-                td3.appendChild(increaseButton);
-
-                tr.appendChild(td3);
-
-                // 将新创建的行添加到表格中
-                tableBody.appendChild(tr);
-            });
-        });
-
-        function decreaseRating(id, count) {
-            console.log(`Decrease rating for ID: ${id} with count: ${count}`);
-            // 将 count 转换为整数
-            const currentCount = parseInt(count, 10);
-            const newCount = (currentCount - 1).toString(); // 转换为字符串
-
-            // 在这里添加减少评分的逻辑
-            const todo = AV.Object.createWithoutData("name", id);
-            todo.set("count", newCount);
+            // 更新数据库中的计数值
+            const todo = AV.Object.createWithoutData("baby_name", id);
+            todo.set("cnumber", newCount);  // 直接保存为 number 类型
             todo.save().then(() => {
                 console.log(`Rating decreased for ID: ${id}`);
-                // 更新页面中的 count 值
-                document.querySelector(`#rating${id}`).textContent = newCount;
+                // 刷新表格数据
+                refreshTable();
             });
         }
 
-        function increaseRating(id, count) {
-            console.log(`Increase rating for ID: ${id} with count: ${count}`);
-            // 将 count 转换为整数
-            const currentCount = parseInt(count, 10);
-            const newCount = (currentCount + 1).toString(); // 转换为字符串
+        function increaseRating(id) {
+            // 获取当前计数值
+            const countElement = document.querySelector(`#rating${id}`);
+            const currentCount = parseInt(countElement.textContent, 10);
+            const newCount = currentCount + 1;
 
-            // 在这里添加增加评分的逻辑
-            const todo = AV.Object.createWithoutData("name", id);
-            todo.set("count", newCount);
+            // 更新数据库中的计数值
+            const todo = AV.Object.createWithoutData("baby_name", id);
+            todo.set("cnumber", newCount);  // 直接保存为 number 类型
             todo.save().then(() => {
                 console.log(`Rating increased for ID: ${id}`);
-                // 更新页面中的 count 值
-                document.querySelector(`#rating${id}`).textContent = newCount;
+                // 刷新表格数据
+                refreshTable();
             });
         }
-
     </script>
 </head>
 <body>
