@@ -141,6 +141,7 @@
                     // 创建第一个单元格
                     const td1 = document.createElement("td");
                     td1.textContent = name;
+                    td1.id = `name${id}`;
                     tr.appendChild(td1);
 
                     // 创建第二个单元格
@@ -170,6 +171,22 @@
                 if (showAlert) {
                     showCustomAlert("刷新成功");
                 }
+
+                const likedIds = getLikedIdsFromLocalStorage();
+                // 遍历 likedIds 数组
+                likedIds.forEach((id) => {
+                    // 找到对应的姓名标签
+                    const nameElement = document.querySelector(`#name${id}`);
+                    if (nameElement) {
+                        // 将字体颜色改为灰色
+                        nameElement.style.color = "gray";
+                    }
+                    const ratingElement = document.querySelector(`#rating${id}`);
+                    if (ratingElement) {
+                        // 好评颜色改为灰色
+                        ratingElement.style.color = "gray";
+                    }
+                });
             });
         }
 
