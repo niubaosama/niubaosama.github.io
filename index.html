@@ -217,7 +217,7 @@
         });
 
         // 刷新表格数据的函数
-        function refreshTable() {
+        function refreshTable(flag = false) {
             const query = new AV.Query("baby_name");
 
             query.equalTo("isDelete", "0");
@@ -272,6 +272,9 @@
                 });
 
                 highlightLikedNames();
+                if (flag === true){
+                    showCustomAlert("刷新成功！");
+                }
 
             });
         }
@@ -442,7 +445,7 @@
         <th>姓名😋</th>
         <th>好评度😍</th>
         <th onclick="showInputModal()">新增➕</th>
-        <th onclick="refreshTable()" style="cursor: pointer;">刷新🔁</th>
+        <th onclick="refreshTable(true)" style="cursor: pointer;">刷新🔁</th>
     </tr>
     </thead>
     <tbody>
