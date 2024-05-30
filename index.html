@@ -18,30 +18,37 @@
             border: 1px solid #ddd;
             padding: 8px;
             text-align: center;
+            font-size: 20px;
         }
 
         th {
             background-color: #f2f2f2;
         }
 
+        button {
+            /*width: 30%;*/
+            margin-left: 15px;
+        }
+
 
         .fas.fa-thumbs-down.icon {
-            font-size: 20px;
+            font-size: 30px;
             color: #77DDFF;
         }
 
         .fas.fa-thumbs-down.icon:active {
-            font-size: 20px;
+            font-size: 30px;
+            font-weight: bolder;
             color: #009FCC;
         }
 
-
         .fas.fa-thumbs-up.icon {
-            font-size: 20px;
+            font-size: 30px;
             color: #FF7744;
         }
 
         .fas.fa-thumbs-up.icon:active {
+            font-size: 30px;
             font-weight: bolder;
             color: #E63F00;
         }
@@ -82,7 +89,7 @@
 
             /* 可以根据需要调整字体大小 */
             td, th {
-                font-size: 18px;
+                font-size: 20px;
             }
 
             @font-face {
@@ -92,6 +99,108 @@
                 font-style: normal;
             }
         }
+
+        .fade-in {
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+    </style>
+    <style>
+        /* 模态框背景 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5); /* 背景颜色 */
+        }
+
+        /* 模态框内容 */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+        }
+
+        /* 关闭按钮 */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* 标题 */
+        .modal-content h2 {
+            margin-top: 0;
+            font-size: 24px;
+        }
+
+        /* 输入框 */
+        .modal-content input[type="text"] {
+            width: calc(100% - 40px);
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        /* 提交按钮 */
+        .modal-content button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content button i {
+            margin-right: 8px;
+        }
+
+        /* 错误消息 */
+        #error-message {
+            color: red;
+            display: none;
+            margin-top: 10px;
+        }
+
     </style>
     <script src="//cdn.jsdelivr.net/npm/leancloud-storage@4.0.0/dist/av-min.js"></script>
     <!--    <script src="//code.bdstatic.com/npm/leancloud-storage@4.0.0/dist/av-min.js"></script>-->
@@ -99,7 +208,7 @@
 
     <script>
         // 初始化 LeanCloud
-        const { Query, User } = AV;
+        const {Query, User} = AV;
         AV.debug.enable();
         AV.init({
             appId: "sypHH8vVFVBK6QNbyo0X01Ai-gzGzoHsz",
@@ -108,51 +217,46 @@
         });
 
         // 刷新表格数据的函数
-        function refreshTable(showAlert = false) {
+        function refreshTable() {
             const query = new AV.Query("baby_name");
 
             query.equalTo("isDelete", "0");
             query.ascending("name");
             query.descending("cnumber");
+
             query.find().then((nameList) => {
-                // 获取表格的父元素
                 const tableBody = document.querySelector("tbody");
 
-                // 清空表格内容
+                // 添加 fade-out 动画
+                tableBody.classList.add("fade-in");
+                void tableBody.offsetWidth;  // 触发重绘
+
                 tableBody.innerHTML = "";
 
-                // 遍历查询结果并动态生成表格行
                 nameList.forEach((nameObject) => {
-                    // 使用 get 方法获取 attributes 中的属性值
                     const name = nameObject.get('name');
                     const count = nameObject.get('cnumber');
                     const id = nameObject.get('objectId');
 
-                    // 创建新的表格行
                     const tr = document.createElement("tr");
-                    // tr.classList.add("golden");
 
-                    // 创建隐藏的ID单元格
                     const td0 = document.createElement("td");
                     td0.textContent = id;
                     td0.style.display = "none";
                     tr.appendChild(td0);
 
-                    // 创建第一个单元格
                     const td1 = document.createElement("td");
                     td1.textContent = name;
                     td1.id = `name${id}`;
                     tr.appendChild(td1);
 
-                    // 创建第二个单元格
                     const td2 = document.createElement("td");
                     td2.textContent = count;
                     td2.id = `rating${id}`;
                     tr.appendChild(td2);
 
-                    // 创建第三个单元格及按钮
                     const td3 = document.createElement("td");
-                    td3.setAttribute("colspan", "2"); // 合并两个单元格
+                    td3.setAttribute("colspan", "2");
                     const decreaseButton = document.createElement("button");
                     decreaseButton.setAttribute("onclick", `decreaseRating('${id}')`);
                     decreaseButton.innerHTML = '<i class="fas fa-thumbs-down icon"></i>';
@@ -164,34 +268,27 @@
                     td3.appendChild(increaseButton);
 
                     tr.appendChild(td3);
-
-                    // 将新创建的行添加到表格中
                     tableBody.appendChild(tr);
                 });
-                if (showAlert) {
-                    showCustomAlert("刷新成功");
-                }
 
-                const likedIds = getLikedIdsFromLocalStorage();
-                // 遍历 likedIds 数组
-                likedIds.forEach((id) => {
-                    // 找到对应的姓名标签
-                    const nameElement = document.querySelector(`#name${id}`);
-                    if (nameElement) {
-                        // 将字体颜色改为灰色
-                        nameElement.style.color = "gray";
-                    }
-                    const ratingElement = document.querySelector(`#rating${id}`);
-                    if (ratingElement) {
-                        // 好评颜色改为灰色
-                        ratingElement.style.color = "gray";
-                    }
-                });
+                highlightLikedNames();
+
             });
         }
 
-        // 调用刷新表格数据的函数以初始化表格
-        refreshTable();
+        function highlightLikedNames() {
+            const likedIds = getLikedIdsFromLocalStorage();
+            for (const id in likedIds) {
+                const likeCount = likedIds[id];
+                if (likeCount >= 3) { // 修改判断条件为大于等于 3
+                    const ratingElement = document.querySelector(`#rating${id}`);
+                    ratingElement.style.color = 'gray';
+
+                    const nameElement = document.querySelector(`#name${id}`);
+                    nameElement.style.color = 'gray';
+                }
+            }
+        }
 
         function decreaseRating(id) {
             // 获取当前计数值
@@ -199,11 +296,11 @@
             const currentCount = parseInt(countElement.textContent, 10);
             const newCount = currentCount - 1;
 
-            // 检查本地存储中是否存在点赞记录
-            const hasLiked = checkIfLiked(id);
+            // 获取点赞次数
+            const likeCount = getLikeCountFromLocalStorage(id);
 
-            if (!hasLiked) {
-                // 如果未点过赞，则执行减一操作
+            if (likeCount < 3) {
+                // 如果点赞次数小于 3，则执行减一操作
                 const todo = AV.Object.createWithoutData("baby_name", id);
                 todo.set("cnumber", newCount);  // 直接保存为 number 类型
                 todo.save().then(() => {
@@ -214,11 +311,10 @@
                     saveLikeToLocalStorage(id);
                 });
             } else {
-                // 如果已经点过赞，则弹出提示
-                showCustomAlert("您已经点过赞了！");
+                // 如果点赞次数达到 3，则弹出提示
+                showCustomAlert("您已经点过三次赞了！");
             }
         }
-
 
         function increaseRating(id) {
             // 获取当前计数值
@@ -226,14 +322,11 @@
             const currentCount = parseInt(countElement.textContent, 10);
             const newCount = currentCount + 1;
 
-            // 检查本地存储中是否存在点赞记录
-            const hasLiked = checkIfLiked(id);
+            // 获取点赞次数
+            const likeCount = getLikeCountFromLocalStorage(id);
 
-            if (hasLiked) {
-                // 如果已经点过赞，则弹出提示
-                showCustomAlert("您已经点过赞了！");
-            } else {
-                // 更新数据库中的计数值
+            if (likeCount < 3) {
+                // 如果点赞次数小于 3，则执行加一操作
                 const todo = AV.Object.createWithoutData("baby_name", id);
                 todo.set("cnumber", newCount);  // 直接保存为 number 类型
                 todo.save().then(() => {
@@ -243,31 +336,104 @@
                     // 将点赞记录保存到本地存储中
                     saveLikeToLocalStorage(id);
                 });
+            } else {
+                // 如果点赞次数达到 3，则弹出提示
+                showCustomAlert("您已经点过三次赞了！");
             }
         }
 
         function showCustomAlert(message) {
-            alert(message)
+            alert(message);
         }
 
-        function checkIfLiked(id) {
-            const likedIds = getLikedIdsFromLocalStorage();
-            return likedIds.includes(id);
+        function getLikeCountFromLocalStorage(id) {
+            const likedIds = JSON.parse(localStorage.getItem("likedIds")) || {};
+            return likedIds[id] || 0;
         }
 
         function saveLikeToLocalStorage(id) {
-            const likedIds = getLikedIdsFromLocalStorage();
-            likedIds.push(id);
+            const likedIds = JSON.parse(localStorage.getItem("likedIds")) || {};
+            likedIds[id] = (likedIds[id] || 0) + 1;
             localStorage.setItem("likedIds", JSON.stringify(likedIds));
         }
 
         function getLikedIdsFromLocalStorage() {
-            return JSON.parse(localStorage.getItem("likedIds")) || [];
+            return JSON.parse(localStorage.getItem("likedIds")) || {};
         }
 
+        function showInputModal() {
+            document.getElementById('inputModal').style.display = 'block';
+        }
+
+        function closeInputModal() {
+            document.getElementById('inputModal').style.display = 'none';
+        }
+
+        function validateInput() {
+            const nameInput = document.getElementById("nameInput").value;
+            const errorMessage = document.getElementById("error-message");
+            const regex = /^[\u4e00-\u9fa5]{2,3}$/; // 正则表达式匹配三个汉字
+
+            if (regex.test(nameInput)) {
+                errorMessage.style.display = 'none';
+                return true;
+            } else {
+                errorMessage.style.display = 'block';
+                return false;
+            }
+        }
+
+        function addNewName() {
+            if (!validateInput()) {
+                showCustomAlert("请输入2~3个文字");
+                return;
+            }
+
+            const nameInput = document.getElementById("nameInput").value.trim();
+            if (nameInput) {
+                const BabyName = AV.Object.extend("baby_name");
+                const babyName = new BabyName();
+                babyName.set("name", nameInput);
+                babyName.set("cnumber", 0); // 初始好评度为0
+                babyName.set("isDelete", "0"); // 标记未删除
+
+                babyName.save().then(() => {
+                    console.log(`New name added: ${nameInput}`);
+                    // 刷新表格数据
+                    setTimeout(refreshTable, 500);
+                    showCustomAlert(nameInput+" 添加成功！");
+                    document.getElementById("nameInput").value = ""; // 清空输入框
+                    closeInputModal(); // 关闭模态框
+                }).catch(error => {
+                    console.error("Error adding new name: ", error);
+                });
+            } else {
+                showCustomAlert("请输入一个有效的姓名！");
+            }
+        }
+
+
+        // 调用刷新表格数据的函数以初始化表格
+        refreshTable();
+        showCustomAlert("欢迎访问😎！每个名字可最多点赞👍三次");
     </script>
 </head>
 <body>
+
+<!-- 模态框结构 -->
+<div id="inputModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeInputModal()">&times;</span>
+        <h3>添加宝宝的新名字</h3>
+        <input type="text" id="nameInput" placeholder="输入宝宝的姓名" oninput="validateInput()" />
+        <div id="error-message">请输入2~3个文字</div>
+        <button onclick="addNewName()">
+            <i class="fas fa-check icon"></i> 提交
+        </button>
+    </div>
+</div>
+
+
 <!-- 示例表格 -->
 <table>
     <thead>
@@ -275,8 +441,8 @@
         <th style="display: none;">ID</th>
         <th>姓名😋</th>
         <th>好评度😍</th>
-        <th>操作📝</th>
-        <th onclick="refreshTable(true)">刷新🔁</th>
+        <th onclick="showInputModal()">新增➕</th>
+        <th onclick="refreshTable()" style="cursor: pointer;">刷新🔁</th>
     </tr>
     </thead>
     <tbody>
