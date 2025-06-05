@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超级大乐透奖级信息</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .table-hover-effect {
+                @apply transition-all duration-300 hover:bg-primary/5 hover:shadow-md;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+            }
+
+            /* 移动端优化 */
+            @media (max-width: 768px) {
+                .mobile-table-wrapper {
+                    overflow-x: auto;
+                }
+
+                .table-cell-compact {
+                    padding: 0.3rem 0.5rem !important;
+                }
+
+                .prize-info-compact {
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    position: relative;
+                }
+
+                .prize-info-compact::after {
+                    content: '点击查看详情';
+                    position: absolute;
+                    bottom: 0;
+                    right: 0;
+                    background: linear-gradient(to right, transparent, white 70%);
+                    padding-left: 20px;
+                    padding-right: 4px;
+                    pointer-events: none;
+                }
+
+                .tooltip-trigger {
+                    position: relative;
+                }
+
+                .tooltip-trigger:hover::after {
+                    content: attr(data-tooltip);
+                    position: absolute;
+                    bottom: 100%;
+                    left: 0;
+                    background-color: rgba(0,0,0,0.8);
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    white-space: pre-wrap;
+                    max-width: 280px;
+                    z-index: 10;
+                    font-size: 12px;
+                    line-height: 1.4;
+                    margin-bottom: 4px;
+                }
+
+                .mobile-text-sm {
+                    font-size: 13px !important;
+                }
+
+                .mobile-hide {
+                    display: none !important;
+                }
+
+                .mobile-block {
+                    display: block !important;
+                }
+
+                .condition-item {
+                    margin: 1px 2px !important;
+                    padding: 1px 4px !important;
+                    font-size: 11px !important;
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
+<div class="container mx-auto px-4 py-12 max-w-6xl">
+    <!-- 页面标题 -->
+    <div class="text-center mb-12">
+        <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-dark mb-4 text-shadow">
+            <i class="fa fa-trophy text-accent mr-3"></i>超级大乐透奖级信息
+        </h1>
+        <p class="text-gray-600 text-lg max-w-3xl mx-auto">
+            了解超级大乐透的所有奖级、中奖概率和奖金金额，助您掌握游戏规则，理性购彩
+        </p>
+    </div>
+
+    <!-- 奖级信息卡片 -->
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden card-shadow mb-12">
+        <div class="bg-gradient-to-r from-primary to-blue-600 p-6 text-white">
+            <h2 class="text-2xl font-bold flex items-center">
+                <i class="fa fa-list-ol mr-3"></i>奖级详情
+            </h2>
+        </div>
+
+        <!-- 奖级表格 -->
+        <div class="p-6 overflow-x-auto">
+            <div class="mobile-table-wrapper">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">奖级</th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">中奖条件</th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">中奖概率</th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">奖金金额</th>
+                    </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                    <!-- 一等奖 -->
+                    <tr class="table-hover-effect">
+                        <td class="px-6 py-4 whitespace-nowrap table-cell-compact">
+                            <div class="text-lg font-semibold text-accent">一等奖</div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="flex items-center">
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded mr-2 condition-item">前区5个</span>
+                                <span class="text-gray-600">+</span>
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded ml-2 condition-item">后区2个</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="text-sm mobile-text-sm">
+                                <span class="text-red-500 font-medium">1/21425712</span>
+                                <div class="text-xs text-gray-500">约0.00000467%</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact tooltip-trigger" data-tooltip="奖池低于1亿时，奖金为奖池+当期78%；1-8亿时，分两部分发放；8亿以上时，分两部分发放，单注最高封顶500万元">
+                            <div class="text-sm mobile-text-sm">
+                                <p class="font-medium">浮动奖金</p>
+                                <p class="text-xs text-gray-500 prize-info-compact">
+                                    奖池低于1亿时，奖金为奖池+当期78%；1-8亿时，分两部分发放；8亿以上时，分两部分发放，单注最高封顶500万元
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 二等奖 -->
+                    <tr class="table-hover-effect">
+                        <td class="px-6 py-4 whitespace-nowrap table-cell-compact">
+                            <div class="text-lg font-semibold text-gray-600">二等奖</div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="flex items-center">
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded mr-2 condition-item">前区5个</span>
+                                <span class="text-gray-600">+</span>
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded ml-2 condition-item">后区1个</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="text-sm mobile-text-sm">
+                                <span class="text-red-500 font-medium">1/1071286</span>
+                                <div class="text-xs text-gray-500">约0.0000933%</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact tooltip-trigger" data-tooltip="奖金为当期奖金额减去固定奖总额后的22%，单注最高封顶500万元">
+                            <div class="text-sm mobile-text-sm">
+                                <p class="font-medium">浮动奖金</p>
+                                <p class="text-xs text-gray-500 prize-info-compact">
+                                    奖金为当期奖金额减去固定奖总额后的22%，单注最高封顶500万元
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 三等奖 -->
+                    <tr class="table-hover-effect">
+                        <td class="px-6 py-4 whitespace-nowrap table-cell-compact">
+                            <div class="text-lg font-semibold text-gray-600">三等奖</div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="flex items-center">
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded mr-2 condition-item">前区5个</span>
+                                <span class="text-gray-600">+</span>
+                                <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded ml-2 condition-item">后区0个</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="text-sm mobile-text-sm">
+                                <span class="text-red-500 font-medium">1/324632</span>
+                                <div class="text-xs text-gray-500">约0.000308%</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="text-sm mobile-text-sm font-medium">
+                                固定奖金10000元
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 四等奖 -->
+                    <tr class="table-hover-effect">
+                        <td class="px-6 py-4 whitespace-nowrap table-cell-compact">
+                            <div class="text-lg font-semibold text-gray-600">四等奖</div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="flex items-center">
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded mr-2 condition-item">前区4个</span>
+                                <span class="text-gray-600">+</span>
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded ml-2 condition-item">后区2个</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="text-sm mobile-text-sm">
+                                <span class="text-red-500 font-medium">1/142838</span>
+                                <div class="text-xs text-gray-500">约0.000699%</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="text-sm mobile-text-sm font-medium">
+                                固定奖金3000元
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 五等奖 -->
+                    <tr class="table-hover-effect">
+                        <td class="px-6 py-4 whitespace-nowrap table-cell-compact">
+                            <div class="text-lg font-semibold text-gray-600">五等奖</div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="flex items-center">
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded mr-2 condition-item">前区4个</span>
+                                <span class="text-gray-600">+</span>
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded ml-2 condition-item">后区1个</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="text-sm mobile-text-sm">
+                                <span class="text-red-500 font-medium">1/7142</span>
+                                <div class="text-xs text-gray-500">约0.014%</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="text-sm mobile-text-sm font-medium">
+                                固定奖金300元
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 六等奖 -->
+                    <tr class="table-hover-effect">
+                        <td class="px-6 py-4 whitespace-nowrap table-cell-compact">
+                            <div class="text-lg font-semibold text-gray-600">六等奖</div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="flex items-center">
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded mr-2 condition-item">前区3个</span>
+                                <span class="text-gray-600">+</span>
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded ml-2 condition-item">后区2个</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="text-sm mobile-text-sm">
+                                <span class="text-red-500 font-medium">1/32463</span>
+                                <div class="text-xs text-gray-500">约0.00308%</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="text-sm mobile-text-sm font-medium">
+                                固定奖金200元
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 七等奖 -->
+                    <tr class="table-hover-effect">
+                        <td class="px-6 py-4 whitespace-nowrap table-cell-compact">
+                            <div class="text-lg font-semibold text-gray-600">七等奖</div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="flex items-center">
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded mr-2 condition-item">前区4个</span>
+                                <span class="text-gray-600">+</span>
+                                <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded ml-2 condition-item">后区0个</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="text-sm mobile-text-sm">
+                                <span class="text-red-500 font-medium">1/8016</span>
+                                <div class="text-xs text-gray-500">约0.0125%</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="text-sm mobile-text-sm font-medium">
+                                固定奖金100元
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 八等奖 -->
+                    <tr class="table-hover-effect">
+                        <td class="px-6 py-4 whitespace-nowrap table-cell-compact">
+                            <div class="text-lg font-semibold text-gray-600">八等奖</div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="flex flex-col">
+                                <div class="flex items-center mb-1">
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded mr-2 condition-item">前区3个</span>
+                                    <span class="text-gray-600">+</span>
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded ml-2 condition-item">后区1个</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded mr-2 condition-item">前区2个</span>
+                                    <span class="text-gray-600">+</span>
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded ml-2 condition-item">后区2个</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="text-sm mobile-text-sm">
+                                <span class="text-red-500 font-medium">1/381</span>
+                                <div class="text-xs text-gray-500">约0.262%</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="text-sm mobile-text-sm font-medium">
+                                固定奖金15元
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 九等奖 -->
+                    <tr class="table-hover-effect">
+                        <td class="px-6 py-4 whitespace-nowrap table-cell-compact">
+                            <div class="text-lg font-semibold text-gray-600">九等奖</div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="flex flex-col">
+                                <div class="flex items-center mb-1">
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded mr-2 condition-item">前区3个</span>
+                                    <span class="text-gray-600">+</span>
+                                    <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded ml-2 condition-item">后区0个</span>
+                                </div>
+                                <div class="flex items-center mb-1">
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded mr-2 condition-item">前区1个</span>
+                                    <span class="text-gray-600">+</span>
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded ml-2 condition-item">后区2个</span>
+                                </div>
+                                <div class="flex items-center mb-1">
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded mr-2 condition-item">前区2个</span>
+                                    <span class="text-gray-600">+</span>
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded ml-2 condition-item">后区1个</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded mr-2 condition-item">前区0个</span>
+                                    <span class="text-gray-600">+</span>
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded ml-2 condition-item">后区2个</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="text-sm mobile-text-sm">
+                                <span class="text-red-500 font-medium">1/21</span>
+                                <div class="text-xs text-gray-500">约4.76%</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 table-cell-compact">
+                            <div class="text-sm mobile-text-sm font-medium">
+                                固定奖金5元
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 投注说明 -->
+        <div class="bg-gray-50 p-6 border-t border-gray-200">
+            <h3 class="text-lg font-semibold mb-3 flex items-center">
+                <i class="fa fa-info-circle text-primary mr-2"></i>投注说明
+            </h3>
+            <ul class="space-y-2 text-sm text-gray-700">
+                <li class="flex items-start">
+                    <i class="fa fa-check-circle text-green-500 mt-1 mr-2"></i>
+                    <span>基本投注：2元/注，可追加投注1元/注，追加投注奖金为基本投注奖金的80%</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fa fa-check-circle text-green-500 mt-1 mr-2"></i>
+                    <span>一等奖和二等奖为浮动奖，其他奖级为固定奖</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fa fa-check-circle text-green-500 mt-1 mr-2"></i>
+                    <span>开奖时间：每周一、三、六21:15开奖</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fa fa-exclamation-circle text-red-500 mt-1 mr-2"></i>
+                    <span>购彩有风险，请理性投注，量力而行</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 概率可视化 -->
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden card-shadow mb-12">
+        <div class="bg-gradient-to-r from-secondary to-green-600 p-6 text-white">
+            <h2 class="text-2xl font-bold flex items-center">
+                <i class="fa fa-pie-chart mr-3"></i>中奖概率可视化
+            </h2>
+        </div>
+        <div class="p-6">
+            <div class="w-full h-80 bg-gray-50 rounded-lg overflow-hidden">
+                <canvas id="probabilityChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="text-center text-gray-500 text-sm py-6">
+        <p>© 2025 超级大乐透官方信息展示</p>
+        <p class="mt-2">数据仅供参考，请以官方公告为准</p>
+    </footer>
+</div>
+
+<!-- 图表库 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+<script>
+    // 初始化概率图表
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('probabilityChart').getContext('2d');
+
+        // 奖级数据
+        const data = {
+            labels: ['一等奖', '二等奖', '三等奖', '四等奖', '五等奖', '六等奖', '七等奖', '八等奖', '九等奖'],
+            datasets: [{
+                label: '中奖概率 (%)',
+                data: [0.00000467, 0.0000933, 0.000308, 0.000699, 0.014, 0.00308, 0.0125, 0.262, 4.76],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(255, 159, 64, 0.7)',
+                    'rgba(255, 205, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(153, 102, 255, 0.7)',
+                    'rgba(201, 203, 207, 0.7)',
+                    'rgba(128, 222, 234, 0.7)',
+                    'rgba(129, 199, 132, 0.7)'
+                ],
+                borderColor: [
+                    'rgb(255, 99, 132)',
+                    'rgb(255, 159, 64)',
+                    'rgb(255, 205, 86)',
+                    'rgb(75, 192, 192)',
+                    'rgb(54, 162, 235)',
+                    'rgb(153, 102, 255)',
+                    'rgb(201, 203, 207)',
+                    'rgb(128, 222, 234)',
+                    'rgb(129, 199, 132)'
+                ],
+                borderWidth: 1,
+                borderRadius: 4,
+                barThickness: 30
+            }]
+        };
+
+        // 图表配置
+        const config = {
+            type: 'bar',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toFixed(6) + '%';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '中奖概率 (%)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: '奖级'
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `概率: ${context.raw.toFixed(6)}% (约1/${Math.round(1/context.raw*100)}中1)`;
+                            }
+                        }
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        };
+
+        // 创建图表
+        const myChart = new Chart(ctx, config);
+    });
+</script>
+</body>
+</html>
