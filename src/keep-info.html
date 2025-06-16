@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitTrack - 个人运动记录</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10B981', // 活力绿
+                        secondary: '#3B82F6', // 海洋蓝
+                        accent: '#F97316', // 能量橙
+                        dark: '#1E293B', // 深灰
+                        light: '#F8FAFC', // 浅灰
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'pulse-light': 'pulseLight 2s infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        pulseLight: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0.7' },
+                        }
+                    }
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .input-focus {
+                @apply focus:ring-2 focus:ring-primary/50 focus:border-primary transition duration-200;
+            }
+            .btn-hover {
+                @apply hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200;
+            }
+            .btn-primary {
+                @apply bg-primary hover:bg-primary/90 text-white font-medium rounded-lg px-4 py-2.5 btn-hover;
+            }
+            .btn-secondary {
+                @apply bg-secondary hover:bg-secondary/90 text-white font-medium rounded-lg px-4 py-2.5 btn-hover;
+            }
+            .btn-accent {
+                @apply bg-accent hover:bg-accent/90 text-white font-medium rounded-lg px-4 py-2.5 btn-hover;
+            }
+            .btn-outline {
+                @apply border border-primary text-primary hover:bg-primary/10 font-medium rounded-lg px-4 py-2.5 btn-hover;
+            }
+            .card-hover {
+                @apply hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-light text-dark min-h-screen flex flex-col">
+<!-- 导航栏 -->
+<header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <div class="text-primary text-3xl">
+                <i class="fa fa-heartbeat"></i>
+            </div>
+            <h1 class="text-xl md:text-2xl font-bold text-dark">FitTrack</h1>
+        </div>
+        <nav>
+            <ul class="hidden md:flex space-x-6">
+                <li><a href="#" class="text-primary font-medium">首页</a></li>
+                <li><a href="#" class="text-dark hover:text-primary transition-colors">统计</a></li>
+                <li><a href="#" class="text-dark hover:text-primary transition-colors">目标</a></li>
+                <li><a href="#" class="text-dark hover:text-primary transition-colors">设置</a></li>
+            </ul>
+            <button class="md:hidden text-dark text-xl">
+                <i class="fa fa-bars"></i>
+            </button>
+        </nav>
+    </div>
+</header>
+
+<main class="flex-grow container mx-auto px-4 py-8">
+    <!-- 英雄区域 -->
+    <section class="mb-12 animate-fade-in">
+        <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-6 md:p-10">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-6 md:mb-0">
+                    <h2 class="text-[clamp(1.75rem,5vw,2.5rem)] font-bold mb-4">记录每一步成长，<br>见证更好的自己</h2>
+                    <p class="text-gray-600 mb-6">FitTrack帮助你轻松记录和追踪个人运动数据，让健身更有计划性和成就感。</p>
+                    <div class="flex flex-wrap gap-4">
+                        <button id="add-workout-btn" class="btn-primary">
+                            <i class="fa fa-plus mr-2"></i>添加运动
+                        </button>
+                        <button class="btn-outline">
+                            <i class="fa fa-bar-chart mr-2"></i>查看统计
+                        </button>
+                    </div>
+                </div>
+                <div class="md:w-1/2 flex justify-center">
+                    <div class="relative w-64 h-64 md:w-80 md:h-80">
+                        <div class="absolute inset-0 rounded-full bg-primary/20 animate-pulse-light"></div>
+                        <div class="absolute inset-4 rounded-full bg-secondary/20 animate-pulse"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i class="fa fa-running text-6xl md:text-8xl text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 统计卡片 -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div class="bg-white rounded-xl p-6 card-shadow card-hover animate-slide-up" style="animation-delay: 0.1s">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold">本周运动</h3>
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <i class="fa fa-calendar"></i>
+                </div>
+            </div>
+            <div class="text-3xl font-bold mb-2">12.5<span class="text-xl font-normal ml-1">小时</span></div>
+            <div class="text-sm text-gray-500">较上周 <span class="text-green-500">↑ 15%</span></div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 card-shadow card-hover animate-slide-up" style="animation-delay: 0.2s">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold">完成训练</h3>
+                <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+                    <i class="fa fa-check-circle"></i>
+                </div>
+            </div>
+            <div class="text-3xl font-bold mb-2">18<span class="text-xl font-normal ml-1">次</span></div>
+            <div class="text-sm text-gray-500">本月目标: <span class="text-blue-500">25次</span></div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 card-shadow card-hover animate-slide-up" style="animation-delay: 0.3s">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold">消耗热量</h3>
+                <div class="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent">
+                    <i class="fa fa-fire"></i>
+                </div>
+            </div>
+            <div class="text-3xl font-bold mb-2">4,872<span class="text-xl font-normal ml-1">千卡</span></div>
+            <div class="text-sm text-gray-500">平均每天: <span class="text-orange-500">696千卡</span></div>
+        </div>
+    </section>
+
+    <!-- 运动记录区域 -->
+    <section class="mb-12">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">最近运动记录</h2>
+            <div class="flex space-x-2">
+                <button class="px-3 py-1 rounded-md bg-primary/10 text-primary text-sm font-medium">
+                    全部
+                </button>
+                <button class="px-3 py-1 rounded-md bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 transition-colors">
+                    跑步
+                </button>
+                <button class="px-3 py-1 rounded-md bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 transition-colors">
+                    游泳
+                </button>
+                <button class="px-3 py-1 rounded-md bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 transition-colors">
+                    健身
+                </button>
+            </div>
+        </div>
+
+        <!-- 表头 -->
+        <div class="hidden md:grid grid-cols-12 gap-4 mb-2 font-semibold text-gray-600">
+            <div class="col-span-2">日期</div>
+            <div class="col-span-2">开始时间</div>
+            <div class="col-span-2">距离</div>
+            <div class="col-span-3">运动时间</div>
+            <div class="col-span-2">消耗卡路里</div>
+            <div class="col-span-1 text-right">操作</div>
+        </div>
+
+        <!-- 运动记录列表 -->
+        <div id="workout-list" class="space-y-4">
+            <!-- 运动记录项 1 -->
+            <div class="bg-white rounded-xl p-4 card-shadow card-hover">
+                <div class="md:hidden flex justify-between items-center mb-4">
+                    <h3 class="font-semibold">户外跑步</h3>
+                    <div class="text-sm text-gray-500">今天</div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-12 gap-4">
+                    <div class="col-span-2">
+                        <div class="md:hidden text-sm font-medium text-gray-500">日期</div>
+                        <div>06/16</div>
+                    </div>
+                    <div class="col-span-2">
+                        <div class="md:hidden text-sm font-medium text-gray-500">开始时间</div>
+                        <div>19:44</div>
+                    </div>
+                    <div class="col-span-2">
+                        <div class="md:hidden text-sm font-medium text-gray-500">距离</div>
+                        <div>2.25km</div>
+                    </div>
+                    <div class="col-span-3">
+                        <div class="md:hidden text-sm font-medium text-gray-500">运动时间</div>
+                        <div>22:52min</div>
+                    </div>
+                    <div class="col-span-2">
+                        <div class="md:hidden text-sm font-medium text-gray-500">消耗卡路里</div>
+                        <div>223kcal</div>
+                    </div>
+                    <div class="col-span-1 flex justify-end">
+                        <div class="flex space-x-2">
+                            <button class="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                                <i class="fa fa-pencil"></i>
+                            </button>
+                            <button class="p-2 text-red-400 hover:text-red-600 transition-colors delete-btn">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 运动记录项 2 -->
+            <div class="bg-white rounded-xl p-4 card-shadow card-hover">
+                <div class="md:hidden flex justify-between items-center mb-4">
+                    <h3 class="font-semibold">户外跑步</h3>
+                    <div class="text-sm text-gray-500">昨天</div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-12 gap-4">
+                    <div class="col-span-2">
+                        <div class="md:hidden text-sm font-medium text-gray-500">日期</div>
+                        <div>06/15</div>
+                    </div>
+                    <div class="col-span-2">
+                        <div class="md:hidden text-sm font-medium text-gray-500">开始时间</div>
+                        <div>20:18</div>
+                    </div>
+                    <div class="col-span-2">
+                        <div class="md:hidden text-sm font-medium text-gray-500">距离</div>
+                        <div>2.1km</div>
+                    </div>
+                    <div class="col-span-3">
+                        <div class="md:hidden text-sm font-medium text-gray-500">运动时间</div>
+                        <div>20:18min</div>
+                    </div>
+                    <div class="col-span-2">
+                        <div class="md:hidden text-sm font-medium text-gray-500">消耗卡路里</div>
+                        <div>176kcal</div>
+                    </div>
+                    <div class="col-span-1 flex justify-end">
+                        <div class="flex space-x-2">
+                            <button class="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                                <i class="fa fa-pencil"></i>
+                            </button>
+                            <button class="p-2 text-red-400 hover:text-red-600 transition-colors delete-btn">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 空状态 -->
+        <div id="empty-state" class="hidden bg-white rounded-xl p-10 text-center card-shadow">
+            <div class="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <i class="fa fa-clipboard-list text-3xl text-gray-400"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">暂无运动记录</h3>
+            <p class="text-gray-500 mb-6">点击下方按钮添加你的第一条运动记录，开始追踪健身旅程</p>
+            <button id="add-first-workout-btn" class="btn-primary">
+                <i class="fa fa-plus mr-2"></i>添加运动
+            </button>
+        </div>
+    </section>
+</main>
+
+<footer class="bg-dark text-white py-8">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+                <div class="flex items-center space-x-2 mb-4">
+                    <div class="text-primary text-2xl">
+                        <i class="fa fa-heartbeat"></i>
+                    </div>
+                    <h2 class="text-xl font-bold">FitTrack</h2>
+                </div>
+                <p class="text-gray-400 mb-4">记录每一步成长，见证更好的自己</p>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-facebook"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold mb-4">功能</h3>
+                <ul class="space-y-2">
+                    <li><a href="#" class="text-gray-400 hover:text-white transition-colors">运动记录</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-white transition-colors">数据统计</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-white transition-colors">健身目标</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-white transition-colors">运动计划</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold mb-4">支持</h3>
+                <ul class="space-y-2">
+                    <li><a href="#" class="text-gray-400 hover:text-white transition-colors">帮助中心</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-white transition-colors">联系我们</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-white transition-colors">隐私政策</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-white transition-colors">使用条款</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-500 text-sm">
+            <p>&copy; 2025 FitTrack. 保留所有权利。</p>
+        </div>
+    </div>
+</footer>
+
+<!-- 添加运动模态框 -->
+<div id="add-workout-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-xl p-6 w-full max-w-lg mx-4 transform transition-all animate-fade-in">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">添加运动记录</h3>
+            <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+        <form id="add-workout-form">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="workout-type">运动类型</label>
+                    <select id="workout-type" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-focus">
+                        <option value="running">户外跑步</option>
+                        <option value="treadmill">跑步机</option>
+                        <option value="cycling">骑自行车</option>
+                        <option value="swimming">游泳</option>
+                        <option value="strength">力量训练</option>
+                        <option value="yoga">瑜伽</option>
+                        <option value="hiking">徒步</option>
+                        <option value="other">其他</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="workout-date">日期</label>
+                    <input type="date" id="workout-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-focus">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="workout-time">时间</label>
+                    <input type="time" id="workout-time" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-focus">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="workout-duration">时长 (分钟)</label>
+                        <input type="number" id="workout-duration" placeholder="60" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-focus">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="workout-calories">消耗热量 (千卡)</label>
+                        <input type="number" id="workout-calories" placeholder="450" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-focus">
+                    </div>
+                </div>
+
+                <div id="distance-field" class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="workout-distance">距离 (公里)</label>
+                        <input type="number" id="workout-distance" placeholder="5.2" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-focus">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="workout-pace">配速 (分/公里)</label>
+                        <input type="text" id="workout-pace" placeholder="6:18" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-focus">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="workout-notes">备注</label>
+                    <textarea id="workout-notes" rows="3" placeholder="训练感受、状态等..." class="w-full px-3 py-2 border border-gray-300 rounded-lg input-focus"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" id="cancel-add-btn" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">取消</button>
+                <button type="submit" class="btn-primary">保存记录</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+        // 获取DOM元素
+        const addWorkoutBtn = document.getElementById('add-workout-btn');
+        const addFirstWorkoutBtn = document.getElementById('add-first-workout-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const cancelAddBtn = document.getElementById('cancel-add-btn');
+        const addWorkoutModal = document.getElementById('add-workout-modal');
+        const addWorkoutForm = document.getElementById('add-workout-form');
+        const workoutList = document.getElementById('workout-list');
+        const emptyState = document.getElementById('empty-state');
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        const workoutType = document.getElementById('workout-type');
+        const distanceField = document.getElementById('distance-field');
+
+        // 检查是否有运动记录，显示或隐藏空状态
+        function checkWorkoutList() {
+            if (workoutList.children.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+            }
+        }
+
+        // 初始化检查
+        checkWorkoutList();
+
+        // 根据运动类型显示或隐藏距离字段
+        workoutType.addEventListener('change', function() {
+            if (['running', 'treadmill', 'cycling', 'swimming', 'hiking'].includes(this.value)) {
+                distanceField.classList.remove('hidden');
+            } else {
+                distanceField.classList.add('hidden');
+            }
+        });
+
+        // 打开模态框
+        function openModal() {
+            addWorkoutModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+
+            // 设置默认日期为今天
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('workout-date').value = today;
+
+            // 重置表单
+            addWorkoutForm.reset();
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            addWorkoutModal.classList.add('hidden');
+            document.body.style.overflow = ''; // 恢复背景滚动
+        }
+
+        // 添加事件监听器
+        addWorkoutBtn.addEventListener('click', openModal);
+        addFirstWorkoutBtn.addEventListener('click', openModal);
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelAddBtn.addEventListener('click', closeModal);
+
+        // 点击模态框外部关闭
+        addWorkoutModal.addEventListener('click', function(e) {
+            if (e.target === addWorkoutModal) {
+                closeModal();
+            }
+        });
+
+        // 处理删除按钮
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const workoutItem = this.closest('.card-shadow');
+
+                // 添加删除动画
+                workoutItem.classList.add('opacity-0', 'transform', 'translate-x-full');
+                workoutItem.style.transition = 'all 0.3s ease-out';
+
+                // 动画结束后移除元素
+                setTimeout(() => {
+                    workoutItem.remove();
+                    checkWorkoutList();
+                }, 300);
+            });
+        });
+
+        // 处理表单提交
+        addWorkoutForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // 获取表单数据
+            const type = workoutType.value;
+            const date = document.getElementById('workout-date').value;
+            const time = document.getElementById('workout-time').value;
+            const duration = document.getElementById('workout-duration').value;
+            const calories = document.getElementById('workout-calories').value;
+            const distance = document.getElementById('workout-distance').value;
+            const pace = document.getElementById('workout-pace').value;
+            const notes = document.getElementById('workout-notes').value;
+
+            // 格式化日期和时间
+            const formattedDate = new Date(date).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' });
+            const formattedTime = time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('zh-CN', { hour: '2-digit', minute:'2-digit' }) : '00:00';
+
+            // 创建运动类型图标和颜色
+            let iconClass = 'fa-running';
+            let iconColor = 'blue';
+
+            switch(type) {
+                case 'running':
+                    iconClass = 'fa-running';
+                    iconColor = 'blue';
+                    break;
+                case 'treadmill':
+                    iconClass = 'fa-running';
+                    iconColor = 'indigo';
+                    break;
+                case 'cycling':
+                    iconClass = 'fa-bicycle';
+                    iconColor = 'yellow';
+                    break;
+                case 'swimming':
+                    iconClass = 'fa-swimmer';
+                    iconColor = 'cyan';
+                    break;
+                case 'strength':
+                    iconClass = 'fa-dumbbell';
+                    iconColor = 'orange';
+                    break;
+                case 'yoga':
+                    iconClass = 'fa-person-bending-forward';
+                    iconColor = 'purple';
+                    break;
+                case 'hiking':
+                    iconClass = 'fa-mountain';
+                    iconColor = 'green';
+                    break;
+                case 'other':
+                    iconClass = 'fa-ellipsis-h';
+                    iconColor = 'gray';
+                    break;
+            }
+
+            // 创建新的运动记录项
+            const newWorkoutItem = document.createElement('div');
+            newWorkoutItem.className = 'bg-white rounded-xl p-5 card-shadow card-hover flex flex-col md:flex-row md:items-center opacity-0 transform translate-y-4';
+            newWorkoutItem.style.transition = 'all 0.3s ease-out';
+
+            // 设置内容
+            let content = `
+                    <div class="flex items-center mb-4 md:mb-0 md:mr-6">
+                        <div class="w-12 h-12 rounded-full bg-${iconColor}-100 flex items-center justify-center text-${iconColor}-600 mr-4">
+                            <i class="fa ${iconClass}"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">${getWorkoutTypeName(type)}</h3>
+                            <p class="text-sm text-gray-500">${formattedDate} ${formattedTime}</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 flex-grow mb-4 md:mb-0">
+                `;
+
+            // 根据运动类型显示不同的数据
+            if (['running', 'treadmill', 'cycling', 'swimming', 'hiking'].includes(type)) {
+                content += `
+                        <div class="text-center">
+                            <div class="text-lg font-semibold">${distance || '0'}</div>
+                            <div class="text-xs text-gray-500">公里</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-lg font-semibold">${duration || '0'}</div>
+                            <div class="text-xs text-gray-500">分钟</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-lg font-semibold">${pace || '0:00'}</div>
+                            <div class="text-xs text-gray-500">配速</div>
+                        </div>
+                    `;
+            } else {
+                content += `
+                        <div class="text-center">
+                            <div class="text-lg font-semibold">${duration || '0'}</div>
+                            <div class="text-xs text-gray-500">分钟</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-lg font-semibold">${getWorkoutExtraInfo(type)}</div>
+                            <div class="text-xs text-gray-500">强度</div>
+                        </div>
+                    `;
+            }
+
+            content += `
+                        <div class="text-center">
+                            <div class="text-lg font-semibold">${calories || '0'}</div>
+                            <div class="text-xs text-gray-500">千卡</div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-2">
+                        <button class="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="fa fa-pencil"></i>
+                        </button>
+                        <button class="p-2 text-red-400 hover:text-red-600 transition-colors delete-btn">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+
+            newWorkoutItem.innerHTML = content;
+
+            // 添加到列表顶部
+            workoutList.insertBefore(newWorkoutItem, workoutList.firstChild);
+
+            // 添加动画效果
+            setTimeout(() => {
+                newWorkoutItem.classList.remove('opacity-0', 'transform', 'translate-y-4');
+            }, 10);
+
+            // 关闭模态框
+            closeModal();
+
+            // 更新空状态
+            checkWorkoutList();
+
+            // 为新添加的删除按钮添加事件监听器
+            const newDeleteBtn = newWorkoutItem.querySelector('.delete-btn');
+            newDeleteBtn.addEventListener('click', function() {
+                const workoutItem = this.closest('.card-shadow');
+
+                // 添加删除动画
+                workoutItem.classList.add('opacity-0', 'transform', 'translate-x-full');
+                workoutItem.style.transition = 'all 0.3s ease-out';
+
+                // 动画结束后移除元素
+                setTimeout(() => {
+                    workoutItem.remove();
+                    checkWorkoutList();
+                }, 300);
+            });
+
+            // 显示成功提示
+            showToast('运动记录已添加成功！');
+        });
+
+        // 辅助函数：获取运动类型名称
+        function getWorkoutTypeName(type) {
+            const names = {
+                'running': '户外跑步',
+                'treadmill': '跑步机',
+                'cycling': '骑自行车',
+                'swimming': '游泳',
+                'strength': '力量训练',
+                'yoga': '瑜伽',
+                'hiking': '徒步',
+                'other': '其他运动'
+            };
+            return names[type] || '未知运动';
+        }
+
+        // 辅助函数：获取运动额外信息
+        function getWorkoutExtraInfo(type) {
+            const info = {
+                'strength': '中',
+                'yoga': '初级',
+                'other': '-'
+            };
+            return info[type] || '-';
+        }
+
+        // 显示提示消息
+        function showToast(message) {
+            // 创建toast元素
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 right-4 bg-dark text-white px-4 py-2 rounded-lg shadow-lg transform translate-y-16 opacity-0 transition-all duration-300 z-50';
+            toast.textContent = message;
+
+            // 添加到页面
+            document.body.appendChild(toast);
+
+            // 显示动画
+            setTimeout(() => {
+                toast.classList.remove('translate-y-16', 'opacity-0');
+            }, 10);
+
+            // 3秒后隐藏
+            setTimeout(() => {
+                toast.classList.add('translate-y-16', 'opacity-0');
+
+                // 动画结束后移除元素
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+    });
+</script>
+</body>
+</html>
