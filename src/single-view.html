@@ -4,12 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>箴言 - 单条展示</title>
-  <!-- 引入Tailwind CSS -->
+  <!-- 引入外部资源 -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- 引入Font Awesome -->
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
-  <!-- 配置Tailwind（与主页保持配色统一） -->
+  <!-- Tailwind配置 -->
   <script>
     tailwind.config = {
       theme: {
@@ -19,10 +18,7 @@
             gray: {
               50: '#F9FAFB',
               100: '#F3F4F6',
-              200: '#E5E7EB',
-              700: '#374151',
-              800: '#1F2937',
-              900: '#111827'
+              200: '#E5E7EB'
             }
           }
         }
@@ -31,131 +27,105 @@
   </script>
 
   <style>
-    /* 基础样式（简化） */
     html, body { height: 100%; overflow: hidden; touch-action: pan-y; }
-
-    /* 打字机效果 */
     .typing-cursor { border-right: 2px solid currentColor; animation: cursor-blink 1s step-end infinite; }
     @keyframes cursor-blink { from, to { border-color: transparent } 50% { border-color: currentColor } }
-
-    /* 翻页动画 */
     .quote-slide { transition: transform 0.5s ease, opacity 0.5s ease; }
-
-    /* 滑动指示器 */
     .scroll-indicator { animation: bounce 2s infinite; }
     @keyframes bounce { 0%,20%,50%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-8px); } 60% { transform: translateY(-4px); } }
-
-    /* 分类标签样式（与主页统一） */
     .category-hot { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; }
     .category-god { background-color: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
     .category-famous { background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+    .loader { border-top-color: #3B82F6; animation: spinner 0.6s linear infinite; }
+    @keyframes spinner { to { transform: rotate(360deg); } }
   </style>
 </head>
 
-<body class="bg-gray-50 font-sans">
-<!-- 简化返回按钮：与主页风格统一 -->
-<a href="index.html" class="fixed top-4 left-4 z-50 bg-white/90 backdrop-blur-sm text-gray-800 p-2 rounded-full shadow-sm hover:bg-white transition-all">
+<body class="bg-gray-50">
+<!-- 返回按钮 -->
+<a href="../index.html" class="fixed top-4 left-4 z-50 bg-white/90 backdrop-blur-sm text-gray-800 p-2 rounded-full shadow-sm hover:bg-white transition-all">
   <i class="fa fa-arrow-left text-sm"></i>
 </a>
 
-<!-- 主内容区 -->
-<div id="quotes-container" class="h-full w-full relative">
-  <!-- 评论内容将通过JavaScript动态生成 -->
+<!-- 加载状态 -->
+<div id="loading" class="fixed inset-0 flex flex-col justify-center items-center z-30 bg-gray-50">
+  <div class="loader w-10 h-10 rounded-full border-4 border-gray-200"></div>
+  <span class="ml-3 text-gray-500 mt-4">加载中...</span>
 </div>
 
-<!-- 底部导航：简化指示器样式 -->
-<div class="fixed bottom-6 left-0 right-0 z-40 flex flex-col items-center">
-  <!-- 进度指示器 -->
-  <div class="flex space-x-1.5 mb-4" id="progress-indicators">
-    <!-- 指示器动态生成 -->
-  </div>
+<!-- 错误状态 -->
+<div id="error" class="fixed inset-0 flex flex-col justify-center items-center z-30 bg-gray-50 hidden">
+  <i class="fa fa-exclamation-circle text-2xl text-gray-400 mb-3"></i>
+  <p class="text-gray-500">加载内容失败</p>
+  <button id="retry-btn" class="mt-4 py-2 px-4 bg-primary text-white rounded-lg text-sm">重试</button>
+</div>
 
-  <!-- 滑动提示 -->
+<!-- 主内容区 -->
+<div id="quotes-container" class="h-full w-full relative hidden"></div>
+
+<!-- 底部导航 -->
+<div class="fixed bottom-6 left-0 right-0 z-40 flex flex-col items-center hidden" id="navigation-controls">
+  <div class="flex space-x-1.5 mb-4" id="progress-indicators"></div>
   <div class="scroll-indicator text-gray-400 text-sm">
     <i class="fa fa-chevron-down"></i>
   </div>
 </div>
 
 <script>
-  // 评论数据（与主页完全一致）
-  const quotesData = [
-    {
-      id: 1,
-      content: "人生就像一杯茶，不会苦一辈子，但总会苦一阵子。",
-      source: "网络热评",
-      author: "匿名网友",
-      likes: 2453,
-      category: "hot",
-      tags: ["人生", "感悟"]
-    },
-    {
-      id: 2,
-      content: "当你觉得自己不行的时候，你就走到斑马线上，这样你就会变成一个行人。",
-      source: "某视频神评",
-      author: "段子手小明",
-      likes: 5678,
-      category: "god",
-      tags: ["幽默", "励志"]
-    },
-    {
-      id: 3,
-      content: "生命中最伟大的光辉不在于永不坠落，而是坠落后总能再度升起。",
-      source: "曼德拉名言",
-      author: "纳尔逊·曼德拉",
-      likes: 12456,
-      category: "famous",
-      tags: ["励志", "生命"]
-    },
-    {
-      id: 4,
-      content: "我对钱没有兴趣，我从来没碰过钱。",
-      source: "某访谈节目",
-      author: "马云",
-      likes: 8932,
-      category: "hot",
-      tags: ["财富", "名人"]
-    },
-    {
-      id: 5,
-      content: "当你凝视深渊时，深渊也在凝视你。所以看深渊的时候记得戴墨镜。",
-      source: "某小说评论区",
-      author: "网友",
-      likes: 3241,
-      category: "god",
-      tags: ["幽默", "哲学"]
-    },
-    {
-      id: 6,
-      content: "我们要有最朴素的生活，与最遥远的梦想。即使明日天寒地冻，路远马亡。",
-      source: "名人名言",
-      author: "海子",
-      likes: 7654,
-      category: "famous",
-      tags: ["生活", "梦想"]
-    }
-  ];
+  let quotesData = [];
+  let currentIndex = 0;
+  let typingTimer = null;
 
   // DOM元素
   const quotesContainer = document.getElementById('quotes-container');
   const progressIndicators = document.getElementById('progress-indicators');
+  const loading = document.getElementById('loading');
+  const error = document.getElementById('error');
+  const retryBtn = document.getElementById('retry-btn');
+  const navigationControls = document.getElementById('navigation-controls');
 
-  // 状态管理（核心：从URL解析评论ID，定位当前索引）
-  let currentIndex = 0;
-  let typingTimer = null;
-
-  // 解析URL参数：获取评论ID
+  // 从URL获取评论ID
   function getQuoteIdFromUrl() {
     const params = new URLSearchParams(window.location.search);
     return params.get('id') ? parseInt(params.get('id')) : null;
   }
 
-  // 根据评论ID获取索引（用于跳转定位）
+  // 根据评论ID获取索引
   function getIndexByQuoteId(id) {
     const quote = quotesData.find(item => item.id === id);
     return quote ? quotesData.indexOf(quote) : 0;
   }
 
-  // 创建进度指示器（简化样式）
+  // 从同目录加载JSON数据（因与quotes.json同处src目录）
+  async function loadQuotesData() {
+    try {
+      loading.classList.remove('hidden');
+      error.classList.add('hidden');
+      quotesContainer.classList.add('hidden');
+      navigationControls.classList.add('hidden');
+
+      // 同目录下直接使用文件名
+      const response = await fetch('quotes.json');
+      if (!response.ok) {
+        throw new Error('网络响应不正常');
+      }
+
+      const data = await response.json();
+      quotesData = data.quotes || [];
+      initQuotes();
+
+      loading.classList.add('hidden');
+      quotesContainer.classList.remove('hidden');
+      navigationControls.classList.remove('hidden');
+
+    } catch (err) {
+      console.error('加载数据失败:', err);
+      loading.classList.add('hidden');
+      error.classList.remove('hidden');
+    }
+  }
+
+  // 创建进度指示器
   function createProgressIndicators() {
     progressIndicators.innerHTML = '';
     quotesData.forEach((_, index) => {
@@ -168,14 +138,13 @@
     });
   }
 
-  // 创建评论元素（与主页分类样式统一）
+  // 创建评论元素
   function createQuoteElement(quote, index) {
     const slide = document.createElement('div');
     slide.className = `quote-slide absolute inset-0 flex flex-col justify-center px-6 md:px-12 ${
             index === currentIndex ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-full'
     }`;
 
-    // 分类图标（与主页统一）
     let categoryIcon = '';
     switch(quote.category) {
       case 'hot': categoryIcon = '<i class="fa fa-fire mr-1 text-xs"></i>'; break;
@@ -185,33 +154,27 @@
 
     slide.innerHTML = `
         <div class="max-w-xl mx-auto w-full">
-          <!-- 分类标签 -->
           <div class="mb-5">
             <span class="inline-block px-2.5 py-1 rounded-full text-xs font-medium category-${quote.category}">
               ${categoryIcon}${quote.source}
             </span>
           </div>
 
-          <!-- 评论内容（打字机区域） -->
           <blockquote class="text-[clamp(1.2rem,4vw,2rem)] font-light leading-tight text-gray-800 mb-6 min-h-[180px]">
             <span id="quote-content-${quote.id}" class="typing-container"></span>
           </blockquote>
 
-          <!-- 作者与点赞 -->
           <div class="flex justify-between items-center">
-            <p class="text-base font-medium text-gray-800">— ${quote.author}</p>
+            <p class="text-base font-medium">— ${quote.author}</p>
             <button class="like-btn bg-white p-2.5 rounded-full shadow-sm text-gray-500 hover:text-red-500 transition-colors text-sm">
               <i class="fa fa-heart-o"></i>
               <span class="ml-1">${quote.likes}</span>
             </button>
           </div>
 
-          <!-- 标签（简化间距） -->
           <div class="flex flex-wrap gap-1.5 mt-5">
             ${quote.tags.map(tag => `
-              <span class="text-xs bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full">
-                ${tag}
-              </span>
+              <span class="text-xs bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full">${tag}</span>
             `).join('')}
           </div>
         </div>
@@ -221,7 +184,7 @@
     return slide;
   }
 
-  // 打字机效果（不变）
+  // 打字机效果
   function typeWriterEffect(element, text, speed = 50, delay = 300) {
     if (typingTimer) clearTimeout(typingTimer);
     element.textContent = '';
@@ -242,28 +205,24 @@
     }, delay);
   }
 
-  // 初始化评论展示（核心：优先使用URL中的评论ID定位）
+  // 初始化评论展示
   function initQuotes() {
     quotesContainer.innerHTML = '';
-
-    // 从URL获取评论ID，定位当前索引
     const quoteId = getQuoteIdFromUrl();
     currentIndex = quoteId ? getIndexByQuoteId(quoteId) : 0;
 
-    // 生成所有评论元素
     quotesData.forEach((quote, index) => {
       const quoteElement = createQuoteElement(quote, index);
       quotesContainer.appendChild(quoteElement);
     });
 
-    // 创建指示器 + 执行打字机效果
     createProgressIndicators();
     const currentQuote = quotesData[currentIndex];
     const contentElement = document.getElementById(`quote-content-${currentQuote.id}`);
     typeWriterEffect(contentElement, currentQuote.content);
   }
 
-  // 翻页逻辑（不变）
+  // 翻页逻辑
   function nextQuote() {
     if (currentIndex >= quotesData.length - 1) return;
     goToQuote(currentIndex + 1);
@@ -296,7 +255,7 @@
     typeWriterEffect(contentElement, currentQuote.content);
   }
 
-  // 更新进度指示器（不变）
+  // 更新进度指示器
   function updateProgressIndicators() {
     const indicators = progressIndicators.querySelectorAll('button');
     indicators.forEach((indicator, index) => {
@@ -310,50 +269,58 @@
     });
   }
 
-  // 交互事件（不变）
-  window.addEventListener('wheel', (e) => {
-    e.deltaY > 0 ? nextQuote() : prevQuote();
-  }, { passive: true });
+  // 事件监听
+  function setupEventListeners() {
+    window.addEventListener('wheel', (e) => {
+      e.deltaY > 0 ? nextQuote() : prevQuote();
+    }, { passive: true });
 
-  let touchStartY = 0;
-  let touchEndY = 0;
-  document.addEventListener('touchstart', (e) => {
-    touchStartY = e.changedTouches[0].screenY;
-  }, { passive: true });
-  document.addEventListener('touchend', (e) => {
-    touchEndY = e.changedTouches[0].screenY;
-    const swipeThreshold = 40;
-    if (touchStartY - touchEndY > swipeThreshold) nextQuote();
-    if (touchEndY - touchStartY > swipeThreshold) prevQuote();
-  }, { passive: true });
+    let touchStartY = 0;
+    let touchEndY = 0;
+    document.addEventListener('touchstart', (e) => {
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
 
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowDown' || e.key === ' ') nextQuote();
-    else if (e.key === 'ArrowUp') prevQuote();
-  });
+    document.addEventListener('touchend', (e) => {
+      touchEndY = e.changedTouches[0].screenY;
+      const swipeThreshold = 40;
+      if (touchStartY - touchEndY > swipeThreshold) nextQuote();
+      if (touchEndY - touchStartY > swipeThreshold) prevQuote();
+    }, { passive: true });
 
-  // 点赞交互（不变）
-  document.addEventListener('click', (e) => {
-    if (e.target.closest('.like-btn')) {
-      const likeBtn = e.target.closest('.like-btn');
-      const icon = likeBtn.querySelector('i');
-      const countEl = likeBtn.querySelector('span');
-      let count = parseInt(countEl.textContent);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown' || e.key === ' ') nextQuote();
+      else if (e.key === 'ArrowUp') prevQuote();
+    });
 
-      if (icon.classList.contains('fa-heart-o')) {
-        icon.classList.replace('fa-heart-o', 'fa-heart');
-        likeBtn.classList.add('text-red-500');
-        countEl.textContent = count + 1;
-      } else {
-        icon.classList.replace('fa-heart', 'fa-heart-o');
-        likeBtn.classList.remove('text-red-500');
-        countEl.textContent = count - 1;
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.like-btn')) {
+        const likeBtn = e.target.closest('.like-btn');
+        const icon = likeBtn.querySelector('i');
+        const countEl = likeBtn.querySelector('span');
+        let count = parseInt(countEl.textContent);
+
+        if (icon.classList.contains('fa-heart-o')) {
+          icon.classList.replace('fa-heart-o', 'fa-heart');
+          likeBtn.classList.add('text-red-500');
+          countEl.textContent = count + 1;
+        } else {
+          icon.classList.replace('fa-heart', 'fa-heart-o');
+          likeBtn.classList.remove('text-red-500');
+          countEl.textContent = count - 1;
+        }
       }
-    }
-  });
+    });
 
-  // 初始化页面
-  window.addEventListener('DOMContentLoaded', initQuotes);
+    retryBtn.addEventListener('click', loadQuotesData);
+  }
+
+  function init() {
+    setupEventListeners();
+    loadQuotesData();
+  }
+
+  window.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
