@@ -1,468 +1,414 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- 确保适当的视口设置 -->
-    <title>名字列表</title>
-    <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-bottom: 20px;
-            font-family: 'MiSans';
-        }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>箴言集 - 热评与名言合集</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-            font-size: 20px;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-
-        button {
-            /*width: 30%;*/
-            margin-left: 15px;
-        }
-
-
-        .fas.fa-thumbs-down.icon {
-            font-size: 30px;
-            color: #77DDFF;
-        }
-
-        .fas.fa-thumbs-down.icon:active {
-            font-size: 30px;
-            font-weight: bolder;
-            color: #009FCC;
-        }
-
-        .fas.fa-thumbs-up.icon {
-            font-size: 30px;
-            color: #FF7744;
-        }
-
-        .fas.fa-thumbs-up.icon:active {
-            font-size: 30px;
-            font-weight: bolder;
-            color: #E63F00;
-        }
-
-
-        .golden {
-            background-color: #FFD700; /* 金色背景 */
-        }
-
-        .silver {
-            background-color: #C0C0C0; /* 银色背景 */
-        }
-
-        .bronze {
-            background-color: #CD7F32; /* 铜色背景 */
-        }
-
-        /* 响应式设计，针对手机设备 */
-        @media only screen and (max-width: 600px) {
-            tr {
-                margin-bottom: 1rem;
-            }
-
-            td {
-                border: none;
-                border-bottom: 1px solid #ddd;
-                position: relative;
-                /*padding-left: 50%;*/
-            }
-
-            td:before {
-                content: attr(data-th); /* 使用data-th属性来展示表头 */
-                position: absolute;
-                left: 6px;
-                width: 45%; /* 调整表头宽度 */
-                font-weight: bold;
-            }
-
-            /* 可以根据需要调整字体大小 */
-            td, th {
-                font-size: 20px;
-            }
-
-            @font-face {
-                font-family: 'MiSans';
-                src: url('/font/MiSans-Medium.ttf') format('truetype');
-                font-weight: normal;
-                font-style: normal;
-            }
-        }
-
-        .fade-in {
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            0% {
-                opacity: 0;
-            }
-            100% {
-                opacity: 1;
-            }
-        }
-    </style>
-    <style>
-        /* 模态框背景 */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5); /* 背景颜色 */
-        }
-
-        /* 模态框内容 */
-        .modal-content {
-            background-color: #fefefe;
-            margin: 10% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 400px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            position: relative;
-        }
-
-        /* 关闭按钮 */
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: #000;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        /* 标题 */
-        .modal-content h2 {
-            margin-top: 0;
-            font-size: 24px;
-        }
-
-        /* 输入框 */
-        .modal-content input[type="text"] {
-            width: calc(100% - 40px);
-            padding: 10px;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-            outline: none;
-            box-sizing: border-box;
-        }
-
-        /* 提交按钮 */
-        .modal-content button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content button i {
-            margin-right: 8px;
-        }
-
-        /* 错误消息 */
-        #error-message {
-            color: red;
-            display: none;
-            margin-top: 10px;
-        }
-
-    </style>
-    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@4.0.0/dist/av-min.js"></script>
-    <!--    <script src="//code.bdstatic.com/npm/leancloud-storage@4.0.0/dist/av-min.js"></script>-->
-    <!--        <script src="https://unpkg.com/browse/leancloud-storage@4.15.2/dist/av-core-min.js"></script>-->
-
+    <!-- 配置Tailwind自定义颜色（简化配色） -->
     <script>
-        // 初始化 LeanCloud
-        const {Query, User} = AV;
-        AV.debug.enable();
-        AV.init({
-            appId: "sypHH8vVFVBK6QNbyo0X01Ai-gzGzoHsz",
-            appKey: "9RJlmcDtPVMX6o6kWhF1eq37",
-            serverURLs: "https://syphh8vv.lc-cn-n1-shared.com",
-        });
-
-        // 刷新表格数据的函数
-        function refreshTable(flag = false) {
-            const query = new AV.Query("baby_name");
-
-            query.equalTo("isDelete", "0");
-            query.ascending("name");
-            query.descending("cnumber");
-
-            query.find().then((nameList) => {
-                const tableBody = document.querySelector("tbody");
-
-                // 添加 fade-out 动画
-                tableBody.classList.add("fade-in");
-                void tableBody.offsetWidth;  // 触发重绘
-
-                tableBody.innerHTML = "";
-
-                nameList.forEach((nameObject) => {
-                    const name = nameObject.get('name');
-                    const count = nameObject.get('cnumber');
-                    const id = nameObject.get('objectId');
-
-                    const tr = document.createElement("tr");
-
-                    const td0 = document.createElement("td");
-                    td0.textContent = id;
-                    td0.style.display = "none";
-                    tr.appendChild(td0);
-
-                    const td1 = document.createElement("td");
-                    td1.textContent = name;
-                    td1.id = `name${id}`;
-                    tr.appendChild(td1);
-
-                    const td2 = document.createElement("td");
-                    td2.textContent = count;
-                    td2.id = `rating${id}`;
-                    tr.appendChild(td2);
-
-                    const td3 = document.createElement("td");
-                    td3.setAttribute("colspan", "2");
-                    const decreaseButton = document.createElement("button");
-                    decreaseButton.setAttribute("onclick", `decreaseRating('${id}')`);
-                    decreaseButton.innerHTML = '<i class="fas fa-thumbs-down icon"></i>';
-                    td3.appendChild(decreaseButton);
-
-                    const increaseButton = document.createElement("button");
-                    increaseButton.setAttribute("onclick", `increaseRating('${id}')`);
-                    increaseButton.innerHTML = '<i class="fas fa-thumbs-up icon"></i>';
-                    td3.appendChild(increaseButton);
-
-                    tr.appendChild(td3);
-                    tableBody.appendChild(tr);
-                });
-
-                highlightLikedNames();
-                if (flag === true){
-                    showCustomAlert("刷新成功！");
-                }
-
-            });
-        }
-
-        function highlightLikedNames() {
-            const likedIds = getLikedIdsFromLocalStorage();
-            for (const id in likedIds) {
-                const likeCount = likedIds[id];
-                if (likeCount >= 3) { // 修改判断条件为大于等于 3
-                    const ratingElement = document.querySelector(`#rating${id}`);
-                    ratingElement.style.color = 'gray';
-
-                    const nameElement = document.querySelector(`#name${id}`);
-                    nameElement.style.color = 'gray';
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        gray: {
+                            50: '#F9FAFB',
+                            100: '#F3F4F6',
+                            200: '#E5E7EB',
+                            700: '#374151',
+                            800: '#1F2937',
+                            900: '#111827'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
                 }
             }
         }
-
-        function decreaseRating(id) {
-            // 获取当前计数值
-            const countElement = document.querySelector(`#rating${id}`);
-            const currentCount = parseInt(countElement.textContent, 10);
-            const newCount = currentCount - 1;
-
-            // 获取点赞次数
-            const likeCount = getLikeCountFromLocalStorage(id);
-
-            if (likeCount < 3) {
-                // 如果点赞次数小于 3，则执行减一操作
-                const todo = AV.Object.createWithoutData("baby_name", id);
-                todo.set("cnumber", newCount);  // 直接保存为 number 类型
-                todo.save().then(() => {
-                    console.log(`Rating decreased for ID: ${id}`);
-                    // 刷新表格数据
-                    setTimeout(refreshTable, 500);
-                    // 将取消点赞记录存储到本地
-                    saveLikeToLocalStorage(id);
-                });
-            } else {
-                // 如果点赞次数达到 3，则弹出提示
-                showCustomAlert("您已经点过三次赞了！");
-            }
-        }
-
-        function increaseRating(id) {
-            // 获取当前计数值
-            const countElement = document.querySelector(`#rating${id}`);
-            const currentCount = parseInt(countElement.textContent, 10);
-            const newCount = currentCount + 1;
-
-            // 获取点赞次数
-            const likeCount = getLikeCountFromLocalStorage(id);
-
-            if (likeCount < 3) {
-                // 如果点赞次数小于 3，则执行加一操作
-                const todo = AV.Object.createWithoutData("baby_name", id);
-                todo.set("cnumber", newCount);  // 直接保存为 number 类型
-                todo.save().then(() => {
-                    console.log(`Rating increased for ID: ${id}`);
-                    // 刷新表格数据
-                    setTimeout(refreshTable, 500);
-                    // 将点赞记录保存到本地存储中
-                    saveLikeToLocalStorage(id);
-                });
-            } else {
-                // 如果点赞次数达到 3，则弹出提示
-                showCustomAlert("您已经点过三次赞了！");
-            }
-        }
-
-        function showCustomAlert(message) {
-            alert(message);
-        }
-
-        function getLikeCountFromLocalStorage(id) {
-            const likedIds = JSON.parse(localStorage.getItem("likedIds")) || {};
-            return likedIds[id] || 0;
-        }
-
-        function saveLikeToLocalStorage(id) {
-            const likedIds = JSON.parse(localStorage.getItem("likedIds")) || {};
-            likedIds[id] = (likedIds[id] || 0) + 1;
-            localStorage.setItem("likedIds", JSON.stringify(likedIds));
-        }
-
-        function getLikedIdsFromLocalStorage() {
-            return JSON.parse(localStorage.getItem("likedIds")) || {};
-        }
-
-        function showInputModal() {
-            document.getElementById('inputModal').style.display = 'block';
-        }
-
-        function toLottery() {
-            window.location.href = "src/lottery-info.html";
-        }
-
-        function toSpeed() {
-            window.location.href = "src/keep-info.html";
-        }
-
-
-        function closeInputModal() {
-            document.getElementById('inputModal').style.display = 'none';
-        }
-
-        function validateInput() {
-            const nameInput = document.getElementById("nameInput").value;
-            const errorMessage = document.getElementById("error-message");
-            const regex = /^[\u4e00-\u9fa5]{2,3}$/; // 正则表达式匹配三个汉字
-
-            if (regex.test(nameInput)) {
-                errorMessage.style.display = 'none';
-                return true;
-            } else {
-                errorMessage.style.display = 'block';
-                return false;
-            }
-        }
-
-        function addNewName() {
-            if (!validateInput()) {
-                showCustomAlert("请输入2~3个文字");
-                return;
-            }
-
-            const nameInput = document.getElementById("nameInput").value.trim();
-            if (nameInput) {
-                const BabyName = AV.Object.extend("baby_name");
-                const babyName = new BabyName();
-                babyName.set("name", nameInput);
-                babyName.set("cnumber", 0); // 初始好评度为0
-                babyName.set("isDelete", "0"); // 标记未删除
-
-                babyName.save().then(() => {
-                    console.log(`New name added: ${nameInput}`);
-                    // 刷新表格数据
-                    setTimeout(refreshTable, 500);
-                    showCustomAlert(nameInput+" 添加成功！");
-                    document.getElementById("nameInput").value = ""; // 清空输入框
-                    closeInputModal(); // 关闭模态框
-                }).catch(error => {
-                    console.error("Error adding new name: ", error);
-                });
-            } else {
-                showCustomAlert("请输入一个有效的姓名！");
-            }
-        }
-
-
-        // 调用刷新表格数据的函数以初始化表格
-        refreshTable();
-        showCustomAlert("欢迎访问😎！每个名字可最多点赞👍三次");
     </script>
-</head>
-<body>
 
-<!-- 模态框结构 -->
-<div id="inputModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeInputModal()">&times;</span>
-        <h3>添加宝宝的新名字</h3>
-        <input type="text" id="nameInput" placeholder="输入宝宝的姓名" oninput="validateInput()" />
-        <div id="error-message">请输入2~3个文字</div>
-        <button onclick="addNewName()">
-            <i class="fas fa-check icon"></i> 提交
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto { content-visibility: auto; }
+            .card-hover { @apply transition-all duration-300 hover:shadow-md hover:-translate-y-1; }
+            .text-balance { text-wrap: balance; }
+        }
+    </style>
+
+    <style>
+        /* 平滑滚动 + 滚动条美化（简化） */
+        html { scroll-behavior: smooth; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+        /* 卡片点击反馈 */
+        .quote-card { cursor: pointer; }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans">
+<!-- 简化页头：紧凑布局，减少冗余元素 -->
+<header class="sticky top-0 z-50 bg-white shadow-sm transition-all duration-300" id="navbar">
+    <div class="container mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
+        <!-- 标题：简化图标与文字搭配 -->
+        <div class="flex items-center">
+            <i class="fa fa-comment text-primary text-2xl mr-2"></i>
+            <h1 class="text-xl font-bold text-gray-800">箴言集</h1>
+        </div>
+
+        <!-- 搜索框：简化样式，减少高度 -->
+        <div class="w-full md:w-1/3 relative">
+            <input
+                    type="text"
+                    placeholder="搜索内容..."
+                    class="w-full py-1.5 px-3 pr-8 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-sm"
+            >
+            <button class="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
+                <i class="fa fa-search text-sm"></i>
+            </button>
+        </div>
+
+        <!-- 导航菜单：简化按钮样式，减少间距 -->
+        <nav class="flex flex-wrap gap-1.5">
+            <button class="category-btn active py-1.5 px-3 rounded-lg text-xs font-medium bg-primary text-white transition-all" data-category="all">
+                全部
+            </button>
+            <button class="category-btn py-1.5 px-3 rounded-lg text-xs font-medium bg-gray-100 hover:bg-gray-200 transition-all" data-category="hot">
+                热评
+            </button>
+            <button class="category-btn py-1.5 px-3 rounded-lg text-xs font-medium bg-gray-100 hover:bg-gray-200 transition-all" data-category="god">
+                神评
+            </button>
+            <button class="category-btn py-1.5 px-3 rounded-lg text-xs font-medium bg-gray-100 hover:bg-gray-200 transition-all" data-category="famous">
+                名言
+            </button>
+        </nav>
+    </div>
+</header>
+
+<!-- 主内容区：保留核心功能，简化排版 -->
+<main class="container mx-auto px-4 py-6">
+    <!-- 统计信息：简化文字，减少间距 -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-2">
+        <div>
+            <h2 class="text-lg font-bold text-gray-800">精选内容</h2>
+            <p class="text-xs text-gray-500">共收录 <span class="text-primary font-medium">1,248</span> 条内容</p>
+        </div>
+
+        <!-- 排序：简化下拉框样式 -->
+        <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-500">排序：</span>
+            <select class="bg-white border border-gray-200 rounded-lg py-1.5 px-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40">
+                <option>最新</option>
+                <option>最多点赞</option>
+                <option>随机</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 内容网格：评论卡片（添加点击跳转） -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="quotes-container">
+        <!-- 卡片将通过JS动态生成，且带跳转功能 -->
+    </div>
+
+    <!-- 加载更多：简化按钮样式 -->
+    <div class="mt-8 text-center">
+        <button id="load-more" class="py-2 px-6 bg-white border border-primary text-primary rounded-lg font-medium hover:bg-primary hover:text-white transition-all text-sm">
+            加载更多 <i class="fa fa-refresh ml-1"></i>
         </button>
     </div>
-</div>
+</main>
 
+<!-- 简化页脚：单列居中，删除冗余模块 -->
+<footer class="bg-gray-100 text-gray-600 py-6 mt-12">
+    <div class="container mx-auto px-4">
+        <!-- 核心信息：居中布局，简化内容 -->
+        <div class="flex flex-col items-center text-center gap-3">
+            <!-- 标题与简介：简化文字 -->
+            <div class="flex items-center">
+                <i class="fa fa-comment text-primary text-xl mr-2"></i>
+                <h3 class="text-lg font-bold text-gray-800">箴言集</h3>
+            </div>
+            <p class="text-xs max-w-xs">收集网络热评、神评与名人名言，分享有温度的文字</p>
 
-<!-- 示例表格 -->
-<table>
-    <thead>
-    <tr>
-        <th style="display: none;">ID</th>
-        <th>姓名😋</th>
-        <th>好评度😍</th>
-<!--        <th onclick="showInputModal()">新增➕</th>-->
-        <th onclick="toLottery()">跳转到大乐透🎆</th>
-        <th onclick="toSpeed()">跳转到运动🚲</th>
-        <th onclick="refreshTable(true)" style="cursor: pointer;">刷新🔁</th>
-    </tr>
-    </thead>
-    <tbody>
-    <!-- 动态生成的行会被添加到这里 -->
-    </tbody>
-</table>
+            <!-- 快速链接：简化数量，横向排列 -->
+            <div class="flex gap-4 text-xs mt-2">
+                <a href="#" class="hover:text-primary transition-colors">关于我们</a>
+                <a href="#" class="hover:text-primary transition-colors">投稿指南</a>
+                <a href="#" class="hover:text-primary transition-colors">隐私政策</a>
+            </div>
 
+            <!-- 版权信息：简化文字 -->
+            <div class="text-xs mt-3 pt-3 border-t border-gray-200 w-full">
+                © 2025 箴言集 | 内容来自网络，侵权即删
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- 返回顶部：简化样式 -->
+<button id="back-to-top" class="fixed bottom-6 right-6 bg-primary text-white rounded-full p-2.5 shadow-md opacity-0 invisible transition-all duration-300 hover:bg-primary/90">
+    <i class="fa fa-arrow-up text-sm"></i>
+</button>
+
+<script>
+    // 评论数据（与单页展示页保持一致）
+    const quotesData = [
+        {
+            id: 1,
+            content: "人生就像一杯茶，不会苦一辈子，但总会苦一阵子。",
+            source: "网络热评",
+            author: "匿名网友",
+            likes: 2453,
+            category: "hot",
+            tags: ["人生", "感悟"]
+        },
+        {
+            id: 2,
+            content: "当你觉得自己不行的时候，你就走到斑马线上，这样你就会变成一个行人。",
+            source: "某视频神评",
+            author: "段子手小明",
+            likes: 5678,
+            category: "god",
+            tags: ["幽默", "励志"]
+        },
+        {
+            id: 3,
+            content: "生命中最伟大的光辉不在于永不坠落，而是坠落后总能再度升起。",
+            source: "曼德拉名言",
+            author: "纳尔逊·曼德拉",
+            likes: 12456,
+            category: "famous",
+            tags: ["励志", "生命"]
+        },
+        {
+            id: 4,
+            content: "我对钱没有兴趣，我从来没碰过钱。",
+            source: "某访谈节目",
+            author: "马云",
+            likes: 8932,
+            category: "hot",
+            tags: ["财富", "名人"]
+        },
+        {
+            id: 5,
+            content: "当你凝视深渊时，深渊也在凝视你。所以看深渊的时候记得戴墨镜。",
+            source: "某小说评论区",
+            author: "网友",
+            likes: 3241,
+            category: "god",
+            tags: ["幽默", "哲学"]
+        },
+        {
+            id: 6,
+            content: "我们要有最朴素的生活，与最遥远的梦想。即使明日天寒地冻，路远马亡。",
+            source: "名人名言",
+            author: "海子",
+            likes: 7654,
+            category: "famous",
+            tags: ["生活", "梦想"]
+        },
+        {
+            id: 7,
+            content: "努力不一定成功，但不努力一定很轻松。",
+            source: "网络热评",
+            author: "匿名网友",
+            likes: 4321,
+            category: "hot",
+            tags: ["幽默", "生活"]
+        },
+        {
+            id: 8,
+            content: "不要低头，王冠会掉；不要流泪，坏人会笑。",
+            source: "某歌曲评论",
+            author: "网友",
+            likes: 2345,
+            category: "hot",
+            tags: ["励志", "生活"]
+        },
+        {
+            id: 9,
+            content: "知识就是力量，但更重要的是运用知识的技能。",
+            source: "名人名言",
+            author: "培根",
+            likes: 1234,
+            category: "famous",
+            tags: ["知识", "学习"]
+        },
+        {
+            id: 10,
+            content: "我不是天生的王者，但我骨子里流着不服输的血液。",
+            source: "某电影台词",
+            author: "路飞",
+            likes: 5678,
+            category: "hot",
+            tags: ["励志", "电影"]
+        },
+        {
+            id: 11,
+            content: "有人问我为什么这么能吃，我说我是为了给国家浪费粮食，减少库存压力。",
+            source: "某美食视频评论",
+            author: "吃货小王",
+            likes: 2109,
+            category: "god",
+            tags: ["幽默", "美食"]
+        },
+        {
+            id: 12,
+            content: "世界上只有一种真正的英雄主义，那就是在认清生活的真相后依然热爱生活。",
+            source: "名人名言",
+            author: "罗曼·罗兰",
+            likes: 9876,
+            category: "famous",
+            tags: ["生活", "英雄主义"]
+        }
+    ];
+
+    // DOM元素
+    const quotesContainer = document.getElementById('quotes-container');
+    const loadMoreBtn = document.getElementById('load-more');
+    const backToTopBtn = document.getElementById('back-to-top');
+    const navbar = document.getElementById('navbar');
+    const categoryBtns = document.querySelectorAll('.category-btn');
+
+    // 状态管理
+    let currentCategory = 'all';
+    let displayedItems = 6;
+
+    // 渲染评论卡片（核心：添加点击跳转至single-view.html）
+    function renderQuotes(category = 'all', limit = displayedItems) {
+        quotesContainer.innerHTML = '';
+
+        // 筛选数据
+        const filteredQuotes = category === 'all'
+            ? quotesData
+            : quotesData.filter(quote => quote.category === category);
+        const quotesToDisplay = filteredQuotes.slice(0, limit);
+
+        // 生成卡片
+        quotesToDisplay.forEach((quote, index) => {
+            // 分类样式（简化配色）
+            let categoryClass = '';
+            let categoryIcon = '';
+            switch(quote.category) {
+                case 'hot':
+                    categoryClass = 'bg-red-100 text-red-600';
+                    categoryIcon = '<i class="fa fa-fire mr-1 text-xs"></i>';
+                    break;
+                case 'god':
+                    categoryClass = 'bg-purple-100 text-purple-600';
+                    categoryIcon = '<i class="fa fa-star mr-1 text-xs"></i>';
+                    break;
+                case 'famous':
+                    categoryClass = 'bg-blue-100 text-blue-600';
+                    categoryIcon = '<i class="fa fa-trophy mr-1 text-xs"></i>';
+                    break;
+            }
+
+            // 卡片元素（添加quote-card类用于点击，data-id传递评论ID）
+            const card = document.createElement('div');
+            card.className = 'quote-card bg-white rounded-lg shadow-sm overflow-hidden card-hover p-4 text-sm';
+            card.dataset.id = quote.id; // 存储评论ID，用于跳转定位
+
+            card.innerHTML = `
+          <div class="flex items-center mb-2">
+            <span class="text-xs font-medium px-2 py-0.5 rounded-full ${categoryClass}">
+              ${categoryIcon}${quote.source}
+            </span>
+          </div>
+          <blockquote class="text-gray-700 mb-3 text-balance line-clamp-2">
+            "${quote.content}"
+          </blockquote>
+          <div class="flex justify-between items-center mb-3">
+            <span class="font-medium text-gray-800">— ${quote.author}</span>
+            <span class="text-gray-500 flex items-center">
+              <i class="fa fa-heart-o text-red-500 mr-1"></i> ${quote.likes}
+            </span>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            ${quote.tags.map(tag => `
+              <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                ${tag}
+              </span>
+            `).join('')}
+          </div>
+        `;
+
+            // 点击卡片跳转至单页展示页（传递当前评论ID）
+            card.addEventListener('click', () => {
+                window.location.href = `src/single-view.html?id=${quote.id}`;
+            });
+
+            quotesContainer.appendChild(card);
+        });
+    }
+
+    // 初始化渲染
+    renderQuotes();
+
+    // 加载更多逻辑（不变）
+    loadMoreBtn.addEventListener('click', () => {
+        displayedItems += 6;
+        renderQuotes(currentCategory, displayedItems);
+
+        const totalItems = currentCategory === 'all'
+            ? quotesData.length
+            : quotesData.filter(quote => quote.category === currentCategory).length;
+
+        if (displayedItems >= totalItems) {
+            loadMoreBtn.innerHTML = '已显示全部 <i class="fa fa-check ml-1"></i>';
+            loadMoreBtn.disabled = true;
+            loadMoreBtn.classList.add('opacity-70', 'cursor-not-allowed');
+        }
+    });
+
+    // 返回顶部逻辑（不变）
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            backToTopBtn.classList.remove('opacity-0', 'invisible');
+            navbar.classList.add('py-2');
+            navbar.classList.remove('py-3');
+        } else {
+            backToTopBtn.classList.add('opacity-0', 'invisible');
+            navbar.classList.remove('py-2');
+            navbar.classList.add('py-3');
+        }
+    });
+
+    backToTopBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // 分类筛选逻辑（不变）
+    categoryBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            categoryBtns.forEach(b => {
+                b.classList.remove('active', 'bg-primary', 'text-white');
+                b.classList.add('bg-gray-100');
+            });
+            btn.classList.add('active', 'bg-primary', 'text-white');
+            btn.classList.remove('bg-gray-100');
+
+            currentCategory = btn.dataset.category;
+            displayedItems = 6;
+            renderQuotes(currentCategory, displayedItems);
+
+            loadMoreBtn.innerHTML = '加载更多 <i class="fa fa-refresh ml-1"></i>';
+            loadMoreBtn.disabled = false;
+            loadMoreBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+</script>
 </body>
 </html>
