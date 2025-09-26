@@ -535,7 +535,10 @@
       "author": "匿名",
       "likes": 5632,
       "category": "famous",
-      "tags": ["生活", "励志"]
+      "tags": [
+        "生活",
+        "励志"
+      ]
     },
     {
       "id": 46,
@@ -544,7 +547,9 @@
       "author": "网友",
       "likes": 3412,
       "category": "hot",
-      "tags": ["人生"]
+      "tags": [
+        "人生"
+      ]
     },
     {
       "id": 47,
@@ -553,7 +558,9 @@
       "author": "段子手阿强",
       "likes": 4890,
       "category": "god",
-      "tags": ["幽默"]
+      "tags": [
+        "幽默"
+      ]
     },
     {
       "id": 48,
@@ -562,7 +569,10 @@
       "author": "丘吉尔",
       "likes": 9021,
       "category": "famous",
-      "tags": ["成功", "勇气"]
+      "tags": [
+        "成功",
+        "勇气"
+      ]
     },
     {
       "id": 49,
@@ -571,7 +581,9 @@
       "author": "唐寅",
       "likes": 7345,
       "category": "famous",
-      "tags": ["人生"]
+      "tags": [
+        "人生"
+      ]
     },
     {
       "id": 50,
@@ -580,7 +592,9 @@
       "author": "网友",
       "likes": 2789,
       "category": "hot",
-      "tags": ["哲学"]
+      "tags": [
+        "哲学"
+      ]
     },
     {
       "id": 51,
@@ -589,7 +603,10 @@
       "author": "网友老李",
       "likes": 4120,
       "category": "god",
-      "tags": ["幽默", "生活"]
+      "tags": [
+        "幽默",
+        "生活"
+      ]
     },
     {
       "id": 52,
@@ -598,7 +615,22 @@
       "author": "亚里士多德",
       "likes": 6543,
       "category": "famous",
-      "tags": ["教育", "学习"]
+      "tags": [
+        "教育",
+        "学习"
+      ]
+    },
+    {
+      "id": 53,
+      "content": "车窗上的卡片是她的。",
+      "source": "名人名言",
+      "author": "姚先生",
+      "likes": 2235,
+      "category": "famous",
+      "tags": [
+        "教育",
+        "学习"
+      ]
     }
   ]
 }
