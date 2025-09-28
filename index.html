@@ -66,6 +66,21 @@
         .no-more.visible {
             opacity: 1;
         }
+
+        /* 长段内容样式 */
+        .long-content {
+            white-space: pre-wrap;
+            font-family: inherit;
+        }
+
+        /* 点赞按钮样式 */
+        .like-button {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .like-button:hover {
+            transform: scale(1.1);
+        }
     </style>
 </head>
 
@@ -101,6 +116,15 @@
             </button>
             <button class="category-btn py-1.5 px-3 rounded-lg text-xs font-medium bg-gray-100 hover:bg-gray-200 transition-all" data-category="famous">
                 名言
+            </button>
+            <button class="category-btn py-1.5 px-3 rounded-lg text-xs font-medium bg-gray-100 hover:bg-gray-200 transition-all" data-category="insight">
+                见解
+            </button>
+            <button class="category-btn py-1.5 px-3 rounded-lg text-xs font-medium bg-gray-100 hover:bg-gray-200 transition-all" data-category="tucao">
+                吐槽
+            </button>
+            <button class="category-btn py-1.5 px-3 rounded-lg text-xs font-medium bg-gray-100 hover:bg-gray-200 transition-all" data-category="long">
+                长段
             </button>
         </nav>
     </div>
@@ -282,36 +306,76 @@
                     categoryClass = 'bg-blue-100 text-blue-600';
                     categoryIcon = '<i class="fa fa-trophy mr-1 text-xs"></i>';
                     break;
+                case 'insight':
+                    categoryClass = 'bg-green-100 text-green-600';
+                    categoryIcon = '<i class="fa fa-lightbulb-o mr-1 text-xs"></i>';
+                    break;
+                case 'tucao':
+                    categoryClass = 'bg-yellow-100 text-yellow-600';
+                    categoryIcon = '<i class="fa fa-meh-o mr-1 text-xs"></i>';
+                    break;
+                case 'long':
+                    categoryClass = 'bg-indigo-100 text-indigo-600';
+                    categoryIcon = '<i class="fa fa-align-left mr-1 text-xs"></i>';
+                    break;
             }
 
             const card = document.createElement('div');
             card.className = 'quote-card bg-white rounded-lg shadow-sm overflow-hidden card-hover p-4 text-sm';
             card.dataset.id = quote.id;
 
-            card.innerHTML = `
-          <div class="flex items-center mb-2">
-            <span class="text-xs font-medium px-2 py-0.5 rounded-full ${categoryClass}">
-              ${categoryIcon}${quote.source}
-            </span>
-          </div>
-          <blockquote class="text-gray-700 mb-3 line-clamp-2">
-            "${quote.content}"
-          </blockquote>
-          <div class="flex justify-between items-center mb-3">
-            <span class="font-medium">— ${quote.author}</span>
-            <span class="text-gray-500 flex items-center">
-              <i class="fa fa-heart-o text-red-500 mr-1"></i> ${quote.likes}
-            </span>
-          </div>
-          <div class="flex flex-wrap gap-1.5">
-            ${quote.tags.map(tag => `
-              <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">${tag}</span>
-            `).join('')}
-          </div>
-        `;
+            // 长段内容使用pre标签，其他使用普通标签
+            const contentElement = quote.category === 'long'
+                ? `<pre class="text-gray-700 mb-3 line-clamp-3 long-content">${quote.content}</pre>`
+                : `<blockquote class="text-gray-700 mb-3 line-clamp-2">"${quote.content}"</blockquote>`;
 
-            card.addEventListener('click', () => {
-                window.location.href = `src/single-view.html?id=${quote.id}`;
+            card.innerHTML = `
+      <div class="flex items-center mb-2">
+        <span class="text-xs font-medium px-2 py-0.5 rounded-full ${categoryClass}">
+          ${categoryIcon}${quote.source}
+        </span>
+      </div>
+      ${contentElement}
+      <div class="flex justify-between items-center mb-3">
+        <span class="font-medium">— ${quote.author}</span>
+        <span class="text-gray-500 flex items-center like-button" data-id="${quote.id}">
+          <i class="fa fa-heart-o text-red-500 mr-1"></i> <span>${quote.likes}</span>
+        </span>
+      </div>
+      <div class="flex flex-wrap gap-1.5">
+        ${quote.tags.map(tag => `
+          <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">${tag}</span>
+        `).join('')}
+      </div>
+    `;
+
+            // 为整个卡片添加点击事件（跳转到详情页）
+            card.addEventListener('click', (e) => {
+                // 检查点击目标是否是点赞按钮或其内部元素
+                if (!e.target.closest('.like-button')) {
+                    window.location.href = `src/single-view.html?id=${quote.id}`;
+                }
+            });
+
+            // 为点赞按钮添加点击事件
+            const likeButton = card.querySelector('.like-button');
+            likeButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // 阻止事件冒泡到卡片
+                const icon = likeButton.querySelector('i');
+                const countEl = likeButton.querySelector('span');
+                let count = parseInt(countEl.textContent);
+
+                if (icon.classList.contains('fa-heart-o')) {
+                    icon.classList.replace('fa-heart-o', 'fa-heart');
+                    countEl.textContent = count + 1;
+                    const quoteData = quotesData.find(q => q.id === parseInt(likeButton.dataset.id));
+                    if (quoteData) quoteData.likes = count + 1;
+                } else {
+                    icon.classList.replace('fa-heart', 'fa-heart-o');
+                    countEl.textContent = count - 1;
+                    const quoteData = quotesData.find(q => q.id === parseInt(likeButton.dataset.id));
+                    if (quoteData) quoteData.likes = count - 1;
+                }
             });
 
             quotesContainer.appendChild(card);
