@@ -92,6 +92,7 @@
       opacity: 0;
       transform: translateY(20px);
       pointer-events: none;
+      padding: 12px 0; /* 增加整体高度 */
     }
     .bottom-navigation.visible {
       opacity: 1;
@@ -99,19 +100,23 @@
       pointer-events: auto;
     }
 
-    /* 返回按钮样式 */
+    /* 返回按钮样式 - 白色透明风格，与其他元素保持一致 */
     .back-button {
       position: fixed;
-      top: 3px;
-      left: 3px;
+      top: 16px;
+      left: 16px;
       z-index: 50;
-      background-color: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur-sm;
-      color: #374151;
-      padding: 2px;
+      background-color: rgba(255, 255, 255, 0.2); /* 白色透明背景 */
+      color: rgba(255, 255, 255, 0.9); /* 白色文字 */
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      transition: opacity 0.5s ease, transform 0.5s ease, background-color 0.3s ease;
+      backdrop-filter: blur(2px); /* 毛玻璃效果 */
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
       opacity: 0;
       transform: translateX(-10px);
       pointer-events: none;
@@ -122,7 +127,8 @@
       pointer-events: auto;
     }
     .back-button:hover {
-      background-color: white;
+      background-color: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
     }
 
     .progress-container {
@@ -131,32 +137,45 @@
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
-      margin-bottom: 2px;
+      margin-bottom: 8px;
+      padding: 8px 0;
     }
     .progress-container::-webkit-scrollbar {
       display: none;
     }
     .progress-dot {
-      width: 6px;
-      height: 6px;
+      width: 8px; /* 增大导航点 */
+      height: 8px;
       border-radius: 50%;
       transition: all 0.3s ease;
+      margin: 0 3px; /* 增加点之间的间距 */
     }
     .progress-dot.active {
-      width: 20px;
+      width: 24px; /* 增大激活状态的导航点 */
       border-radius: 3px;
       background-color: rgba(255, 255, 255, 0.8);
     }
     .progress-dot:not(.active) {
       background-color: rgba(255, 255, 255, 0.4);
-      margin: 0 2px;
+    }
+
+    /* 页码显示样式 */
+    .page-number {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 12px;
+      margin-bottom: 8px;
+      padding: 4px 12px; /* 增大页码点击区域 */
+      background-color: rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      backdrop-filter: blur(2px);
     }
 
     /* 4. 滑动提示动画 */
     .scroll-indicator {
       animation: bounce 2s infinite;
-      font-size: 10px;
+      font-size: 12px;
       color: rgba(255, 255, 255, 0.7);
+      margin-top: 6px;
     }
     @keyframes bounce {
       0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
@@ -213,7 +232,7 @@
 <body class="bg-neutral-100">
 <!-- 返回按钮：与导航栏同步显示/隐藏 -->
 <a href="../index.html" class="back-button" id="backButton">
-  <i class="fa fa-arrow-left text-sm p-1.5"></i>
+  <i class="fa fa-arrow-left"></i>
 </a>
 
 <!-- 加载状态 -->
@@ -234,6 +253,9 @@
 
 <!-- 底部导航 -->
 <div class="bottom-navigation" id="bottomNavigation">
+  <!-- 页码显示 -->
+  <div class="page-number" id="pageNumber">1 / 10</div>
+
   <!-- 进度指示器 -->
   <div class="progress-container flex justify-center pb-2">
     <div id="progress-indicators" class="flex items-center"></div>
@@ -246,6 +268,25 @@
 </div>
 
 <script>
+  // ==============================================
+  // 打字机效果配置参数 - 可根据需要调整以下变量
+  // ==============================================
+  const typingConfig = {
+    baseSpeed: 40,               // 基础打字速度(毫秒)，值越大越慢
+    randomVariationRange: 100,   // 随机变化范围，值越大速度变化越明显
+    randomVariationOffset: -20,  // 随机变化偏移量，负值可增加慢速概率
+    punctuationDelay: 100,       // 标点符号后的额外延迟(毫秒)
+    spaceDelay: 20,              // 空格后的额外延迟(毫秒)
+    minSpeed: 30,                // 最小打字速度限制(毫秒)
+    maxSpeed: 200                // 最大打字速度限制(毫秒)，值越大允许的慢速越慢
+  };
+  // 配置说明：
+  // 1. 实际打字速度 = baseSpeed + 随机值(randomVariationRange范围内) + 特殊字符延迟
+  // 2. 增大maxSpeed可以让慢速更明显，减小则让打字速度更均匀
+  // 3. punctuationDelay控制标点后的停顿时间，增大可增强阅读体验
+  // 4. randomVariationRange控制整体速度变化幅度，值越大打字节奏变化越明显
+  // ==============================================
+
   let quotesData = [];
   let currentIndex = 0;
   let typingTimer = null;
@@ -262,28 +303,20 @@
   const bottomNavigation = document.getElementById('bottomNavigation');
   const backButton = document.getElementById('backButton');
   const bodyElement = document.body;
+  const pageNumberEl = document.getElementById('pageNumber');
 
   const softColors = [
-    '#fcd34d', // 黄色/琥珀色系
-    '#8b5cf6', // 紫色系
-    '#fbbf24', // 黄色/琥珀色系
-    '#34d399', // 绿色系
-    '#a7f3d0', // 绿色系
-    '#ef4444', // 粉色/红色系
-    '#f87171', // 粉色/红色系
-    '#7dd3fc', // 蓝色系
-    '#c4b5fd', // 紫色系
-    '#f59e0b', // 黄色/琥珀色系
-    '#bae6fd', // 蓝色系
-    '#a78bfa', // 紫色系
-    '#38bdf8', // 蓝色系
-    '#6ee7b7', // 绿色系
-    '#fca5a5'  // 粉色/红色系
+    // 原有颜色中保留适合白色文字的部分
+    '#8b5cf6', '#34d399', '#ef4444', '#7dd3fc',
+    '#c4b5fd', '#a78bfa', '#38bdf8', '#6ee7b7',
+    '#c084fc', '#7e22ce', '#10b981', '#059669',
+    '#f97316', '#ea580c', '#ec4899', '#db2777',
+    '#6366f1', '#4338ca', '#06b6d4', '#0891b2',
+    '#ef4444', '#dc2626', '#8b5cf6', '#7c3aed',
+    '#14b8a6', '#0d9488','#3b82f6', '#1d4ed8',
   ];
-
   // 为每条名言生成唯一的柔和背景色
   function getQuoteColor(index) {
-    // 使用索引作为种子，确保同一条名言始终有相同的颜色
     return softColors[index % softColors.length];
   }
 
@@ -437,23 +470,53 @@
       card.className = `quote-slide ${getCardClass(cardIndex)}`;
     });
     updateProgressDots();
+    updatePageNumber(); // 更新页码显示
   }
 
   /**
-   * 打字机效果
+   * 更新页码显示
    */
-  function typeWriterEffect(element, text, speed = 50, delay = 300) {
+  function updatePageNumber() {
+    if (quotesData.length > 0) {
+      pageNumberEl.textContent = `${currentIndex + 1} / ${quotesData.length}`;
+    }
+  }
+
+  /**
+   * 打字机效果 - 使用配置参数控制变速效果
+   */
+  function typeWriterEffect(element, text, delay = 300) {
     if (typingTimer) clearTimeout(typingTimer);
     element.textContent = '';
     element.classList.add('typing-cursor');
 
     let i = 0;
+
+    // 常用标点符号，之后通常会有更长停顿
+    const punctuation = ['.', ',', ';', ':', '!', '?', '，', '。', '；', '：', '！', '？', '、'];
+
     setTimeout(() => {
       function type() {
         if (i < text.length) {
           element.textContent += text.charAt(i);
           i++;
-          typingTimer = setTimeout(type, speed);
+
+          // 根据配置计算随机变化值
+          const randomVariation = (Math.random() * typingConfig.randomVariationRange) + typingConfig.randomVariationOffset;
+
+          // 计算额外延迟
+          let extraDelay = 0;
+          if (punctuation.includes(text.charAt(i-1))) {
+            extraDelay = typingConfig.punctuationDelay;
+          } else if (text.charAt(i-1) === ' ') {
+            extraDelay = typingConfig.spaceDelay;
+          }
+
+          // 计算最终速度并应用限制
+          let nextSpeed = typingConfig.baseSpeed + randomVariation + extraDelay;
+          nextSpeed = Math.max(typingConfig.minSpeed, Math.min(typingConfig.maxSpeed, nextSpeed));
+
+          typingTimer = setTimeout(type, nextSpeed);
         } else {
           element.classList.remove('typing-cursor');
         }
@@ -463,22 +526,10 @@
   }
 
   /**
-   * 计算需要显示的导航点范围（最多10个）
+   * 计算需要显示的导航点范围
    */
   function getVisibleDotRange() {
-    if (quotesData.length <= MAX_VISIBLE_DOTS) {
-      return { start: 0, end: quotesData.length - 1 };
-    }
-
-    let start = Math.max(0, currentIndex - Math.floor(MAX_VISIBLE_DOTS / 2));
-    let end = start + MAX_VISIBLE_DOTS - 1;
-
-    if (end >= quotesData.length) {
-      end = quotesData.length - 1;
-      start = Math.max(0, end - MAX_VISIBLE_DOTS + 1);
-    }
-
-    return { start, end };
+    return { start: 0, end: quotesData.length - 1 };
   }
 
   /**
@@ -487,13 +538,6 @@
   function createProgressDots() {
     progressIndicators.innerHTML = '';
     const { start, end } = getVisibleDotRange();
-
-    if (start > 0) {
-      const ellipsis = document.createElement('div');
-      ellipsis.className = 'mx-1 text-white/50 text-xs';
-      ellipsis.textContent = '...';
-      progressIndicators.appendChild(ellipsis);
-    }
 
     for (let i = start; i <= end; i++) {
       const dot = document.createElement('div');
@@ -508,13 +552,6 @@
       });
 
       progressIndicators.appendChild(dot);
-    }
-
-    if (end < quotesData.length - 1) {
-      const ellipsis = document.createElement('div');
-      ellipsis.className = 'mx-1 text-white/50 text-xs';
-      ellipsis.textContent = '...';
-      progressIndicators.appendChild(ellipsis);
     }
 
     const activeDot = progressIndicators.querySelector('.progress-dot.active');
@@ -571,13 +608,14 @@
     });
 
     createProgressDots();
+    updatePageNumber();
     const initialQuote = quotesData[currentIndex];
     const initialContent = document.getElementById(`quote-content-${initialQuote.id}`);
     typeWriterEffect(initialContent, initialQuote.content);
   }
 
   /**
-   * 设置用户交互监听（用于显示/隐藏元素）
+   * 设置用户交互监听
    */
   function setupUserInteractionListeners() {
     // 触摸交互

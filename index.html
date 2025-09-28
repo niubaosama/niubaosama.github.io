@@ -44,6 +44,28 @@
         .quote-card { cursor: pointer; }
         .loader { border-top-color: #3B82F6; animation: spinner 0.6s linear infinite; }
         @keyframes spinner { to { transform: rotate(360deg); } }
+
+        /* 返回顶部按钮样式 */
+        #back-to-top {
+            transform: translateY(20px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        #back-to-top.visible {
+            transform: translateY(0);
+        }
+
+        /* 没有更多内容提示 */
+        .no-more {
+            text-align: center;
+            padding: 12px 0;
+            color: #9ca3af;
+            font-size: 13px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .no-more.visible {
+            opacity: 1;
+        }
     </style>
 </head>
 
@@ -118,11 +140,12 @@
     <!-- 内容网格 -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="quotes-container"></div>
 
-    <!-- 加载更多 -->
-    <div class="mt-8 text-center">
-        <button id="load-more" class="py-2 px-6 bg-white border border-primary text-primary rounded-lg font-medium hover:bg-primary hover:text-white transition-all text-sm hidden">
-            加载更多 <i class="fa fa-refresh ml-1"></i>
-        </button>
+    <!-- 无限滚动加载指示器和无更多提示 -->
+    <div id="infinite-loading" class="flex justify-center items-center py-8 hidden">
+        <div class="loader w-6 h-6 rounded-full border-4 border-gray-200"></div>
+    </div>
+    <div id="no-more" class="no-more">
+        <i class="fa fa-check-circle mr-1"></i> 已经到底啦，没有更多内容了
     </div>
 </main>
 
@@ -150,19 +173,20 @@
 </footer>
 
 <!-- 返回顶部 -->
-<button id="back-to-top" class="fixed bottom-6 right-6 bg-primary text-white rounded-full p-2.5 shadow-md opacity-0 invisible transition-all duration-300 hover:bg-primary/90">
-    <i class="fa fa-arrow-up text-sm"></i>
+<button id="back-to-top" class="fixed bottom-6 right-6 bg-primary text-white rounded-full p-3 shadow-lg opacity-0 invisible transition-all duration-300 hover:bg-primary/90 hover:scale-110">
+    <i class="fa fa-arrow-up"></i>
 </button>
 
 <script>
     let quotesData = [];
     let currentCategory = 'all';
-    let displayedItems = 6;
+    let displayedItems = 12; // 初始加载更多内容
     let sortType = 'newest';
+    let isLoading = false;
+    let hasMore = true;
 
     // DOM元素
     const quotesContainer = document.getElementById('quotes-container');
-    const loadMoreBtn = document.getElementById('load-more');
     const backToTopBtn = document.getElementById('back-to-top');
     const navbar = document.getElementById('navbar');
     const categoryBtns = document.querySelectorAll('.category-btn');
@@ -171,16 +195,17 @@
     const retryBtn = document.getElementById('retry-btn');
     const totalCountEl = document.getElementById('total-count');
     const sortSelect = document.getElementById('sort-select');
+    const infiniteLoading = document.getElementById('infinite-loading');
+    const noMoreEl = document.getElementById('no-more');
 
-    // 从src目录加载JSON数据（核心路径修改）
+    // 从src目录加载JSON数据
     async function loadQuotesData() {
         try {
             loading.classList.remove('hidden');
             quotesContainer.classList.add('hidden');
             error.classList.add('hidden');
-            loadMoreBtn.classList.add('hidden');
+            noMoreEl.classList.remove('visible');
 
-            // 路径修改为src/quotes.json
             const response = await fetch('src/quotes.json');
             if (!response.ok) {
                 throw new Error('网络响应不正常');
@@ -193,8 +218,7 @@
             renderQuotes();
             loading.classList.add('hidden');
             quotesContainer.classList.remove('hidden');
-            loadMoreBtn.classList.remove('hidden');
-            checkLoadMoreVisibility();
+            checkHasMore();
 
         } catch (err) {
             console.error('加载数据失败:', err);
@@ -203,16 +227,15 @@
         }
     }
 
-    // 其余功能代码保持不变
-    function checkLoadMoreVisibility() {
+    function checkHasMore() {
         const filteredQuotes = getFilteredAndSortedQuotes();
-        if (displayedItems >= filteredQuotes.length) {
-            loadMoreBtn.innerHTML = '已显示全部 <i class="fa fa-check ml-1"></i>';
-            loadMoreBtn.disabled = true;
-            loadMoreBtn.classList.add('opacity-70', 'cursor-not-allowed');
+        hasMore = displayedItems < filteredQuotes.length;
+
+        // 显示/隐藏"没有更多"提示
+        if (hasMore) {
+            noMoreEl.classList.remove('visible');
         } else {
-            loadMoreBtn.innerHTML = '加载更多 <i class="fa fa-refresh ml-1"></i>';
-            loadMoreBtn.disabled = false;
+            noMoreEl.classList.add('visible');
         }
     }
 
@@ -236,11 +259,14 @@
     }
 
     function renderQuotes() {
-        quotesContainer.innerHTML = '';
         const filteredQuotes = getFilteredAndSortedQuotes();
         const quotesToDisplay = filteredQuotes.slice(0, displayedItems);
 
-        quotesToDisplay.forEach(quote => {
+        // 只渲染新增的内容
+        const startIndex = quotesContainer.children.length;
+        const newQuotes = quotesToDisplay.slice(startIndex);
+
+        newQuotes.forEach(quote => {
             let categoryClass = '';
             let categoryIcon = '';
             switch(quote.category) {
@@ -292,23 +318,46 @@
         });
     }
 
-    // 事件监听和初始化代码保持不变
-    function setupEventListeners() {
-        loadMoreBtn.addEventListener('click', () => {
-            displayedItems += 6;
-            renderQuotes();
-            checkLoadMoreVisibility();
-        });
+    // 加载更多内容
+    async function loadMoreContent() {
+        if (isLoading || !hasMore) return;
 
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
-                backToTopBtn.classList.remove('opacity-0', 'invisible');
-                navbar.classList.add('py-2');
-            } else {
-                backToTopBtn.classList.add('opacity-0', 'invisible');
-                navbar.classList.remove('py-2');
-            }
-        });
+        isLoading = true;
+        infiniteLoading.classList.remove('hidden');
+        noMoreEl.classList.remove('visible'); // 加载时隐藏"没有更多"提示
+
+        // 模拟网络延迟
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        displayedItems += 8; // 每次加载8条
+        renderQuotes();
+        checkHasMore();
+
+        isLoading = false;
+        infiniteLoading.classList.add('hidden');
+    }
+
+    // 监听滚动事件，实现无限滚动
+    function handleScroll() {
+        // 显示/隐藏返回顶部按钮
+        if (window.scrollY > 300) {
+            backToTopBtn.classList.remove('opacity-0', 'invisible');
+            backToTopBtn.classList.add('visible');
+            navbar.classList.add('py-2');
+        } else {
+            backToTopBtn.classList.add('opacity-0', 'invisible');
+            backToTopBtn.classList.remove('visible');
+            navbar.classList.remove('py-2');
+        }
+
+        // 无限滚动逻辑
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 300) {
+            loadMoreContent();
+        }
+    }
+
+    function setupEventListeners() {
+        window.addEventListener('scroll', handleScroll);
 
         backToTopBtn.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -324,18 +373,22 @@
                 btn.classList.remove('bg-gray-100');
 
                 currentCategory = btn.dataset.category;
-                displayedItems = 6;
+                displayedItems = 12; // 切换分类时重置为初始加载数量
+                quotesContainer.innerHTML = ''; // 清空现有内容
                 renderQuotes();
-                checkLoadMoreVisibility();
+                checkHasMore();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+                noMoreEl.classList.remove('visible'); // 切换分类时隐藏提示
             });
         });
 
         sortSelect.addEventListener('change', () => {
             sortType = sortSelect.value;
-            displayedItems = 6;
+            displayedItems = 12;
+            quotesContainer.innerHTML = '';
             renderQuotes();
-            checkLoadMoreVisibility();
+            checkHasMore();
+            noMoreEl.classList.remove('visible'); // 切换排序时隐藏提示
         });
 
         retryBtn.addEventListener('click', loadQuotesData);
